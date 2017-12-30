@@ -1,0 +1,16 @@
+Package: WinPerfCounter
+Type: Package
+Title: Read Windows Performance Counter CSV
+Version: 0.1.0
+Author: Wataru Fujishige
+Maintainer: Wataru Fujishige <fjsg@photonway.net>
+Description: Provide function to read the Windows Performance Counter csv file.
+    And supplementary function such as filtering.
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Suggests:
+  testthat
+Depends: lubridate,foreach,stringr
+
+
