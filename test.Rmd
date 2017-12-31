@@ -1,0 +1,33 @@
+---
+title: "SimpleSystemSummary"
+author: "WataruFujishige"
+date: "2017年12月31日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(WinPerfCounter)
+data <- WinPerfCounter.readcsv("tests/testthat/test.csv")
+summary <- WinPerfCounter.miniSummary(data)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Summary
+
+```{r echo=FALSE, warning=FALSE, asis=TRUE}
+library(knitr)
+s <- max(data$Timestamp) - min(data$Timestamp)
+paste("Duration: ", s, units(s))
+paste("DataPoints: ", length(data))
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

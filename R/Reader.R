@@ -42,4 +42,17 @@ WinPerfCounter.alignTime <- function(data, align){
   return (r)
 }
 
+#' @export
+
+WinPerfCounter.miniSummary <- function(data){
+  # duration <- max(data$Timestamp) - min(data$Timestamp)
+  # recordCount <-length(data)
+  # ret <- list(duration = duration, recordCount = recordCount)
+
+  sm <- summary(data)
+  df <- t(data.frame(unclass(sm), check.names = FALSE, stringAsFactors = FALSE))
+  return (df)
+}
+
+
 
