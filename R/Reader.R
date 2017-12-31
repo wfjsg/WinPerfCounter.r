@@ -18,15 +18,28 @@ library(foreach)
 library(stringr)
 
 
-#' @importFrom lubridate
-#' @param filename you want to read.
-#' @return readed dataframe.
 #' @export
 WinPerfCounter.readcsv <- function(filename) {
-  a <- read.csv(filename,
+  data <- read.csv(filename,
                 check.names = FALSE,
                 header = TRUE,
-                fileEncoding = "UTF-8-BOM")
-
+                as.is = TRUE)
+                # fileEncoding = "UTF-8-BOM")
+  options(digits.secs=3)
+  colnames(data)[1] <-"DateTime"
+  #as.POSIXct try fromat isonly ... https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.POSIXlt.html
+  data1 <- cbind(data, "Timestamp" = as.POSIXct(data$DateTime,  format="%m/%d/%Y %H:%M:%S"))
+  return(data1);
 }
+
+#' @description align:"15 minutes" https://www.rdocumentation.org/packages/lubridate/versions/1.5.6/topics/round_date
+#' @export
+WinPerfCounter.alignTime <- function(data, align){
+  r <- c(
+      floor_date(min(data$Timestamp), align),
+      ceiling_date(max(data$Timestamp), align)
+    )
+  return (r)
+}
+
 
