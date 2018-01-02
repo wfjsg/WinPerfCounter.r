@@ -16,6 +16,7 @@
 library(lubridate)
 library(foreach)
 library(stringr)
+library(dplyr)
 
 
 #' @export
@@ -27,8 +28,16 @@ WinPerfCounter.readcsv <- function(filename) {
                 # fileEncoding = "UTF-8-BOM")
   options(digits.secs=3)
   colnames(data)[1] <-"DateTime"
-  #as.POSIXct try fromat isonly ... https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.POSIXlt.html
-  data1 <- cbind(data, "Timestamp" = as.POSIXct(data$DateTime,  format="%m/%d/%Y %H:%M:%S"))
+  # as.POSIXct try fromat isonly ... https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.POSIXlt.html
+  remainCol <- ncol(data) -1
+  data1 <- cbind("Timestamp" = as.POSIXct(data$DateTime, format="%m/%d/%Y %H:%M:%S"),
+                 data[,c(1:remainCol)])
+  colNames <- colnames(data1)
+  for(ii in 3:length(colNames)){
+    splitted <- strsplit(colNames[ii], '\\\\')
+    nname <- paste(splitted[[1]][4], splitted[[1]][5], sep = "/")
+    colnames(data1)[ii] <- nname
+  }
   return(data1);
 }
 
