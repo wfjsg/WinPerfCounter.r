@@ -36,8 +36,10 @@ g + guides(fill = FALSE) +
 
 ### Memory
 
-```{r, echo=FALSE}
-memory2 <- memory %>% tidyr::gather(key = metric, value = value, -Timestamp)
-g <- ggplot(memory2, aes(x = Timestamp, y=value))
-g + geom_point(aes(colour = metric)) + ylim(0, 1.6e+10)
+Total
+
+```{r, echo=FALSE, warning=FALSE}
+memory <- WinPerfCounter.Metric.Memory(data)
+g <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
+g + geom_point(aes(colour = metric)) + ylim(0, 16)
 ```

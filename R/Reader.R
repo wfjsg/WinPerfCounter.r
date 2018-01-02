@@ -74,8 +74,19 @@ WinPerfCounter.Metric.CPU <- function(data){
 
 #' @export
 WinPerfCounter.Metric.Memory <- function(data){
-  col <- c("Timestamp", paste("Memory|", c("Available Bytes", "Committed Bytes", "Commit Limit"), sep = ""))
-  ret <- data %>% dplyr::select(col)
+  keys <- c("Available Bytes", "Committed Bytes", "Commit Limit")
+  col <- c("Timestamp", paste("Memory|", keys, sep = ""))
+  outkeys <- c("Timestamp", gsub(" ", "_", keys))
+  # ret <- data %>% dplyr::select(col) %>% tidyr::gather(key = metric, value = value, -Timestamp)
+#  ret <- data %>% dplyr::select(col) %>%
+    # dplyr::rename_all(WinPerfCounter.makeKeyOnly()) %>%
+ #   dplyr::rename_at(.vars = dplyr::vars(), dplyr::funs(WinPerfCounter.makeKeyOnly(.)))
+    # tidyr::gather(key = metric, value = value, -Timestamp)
+  tmp <- data %>% dplyr::select(col)
+  colnames(tmp) <- outkeys
+  # ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp)
+  ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp) %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
   return(ret)
 }
+
 
