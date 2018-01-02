@@ -18,7 +18,6 @@ library(foreach)
 library(stringr)
 library(dplyr)
 
-
 #' @export
 WinPerfCounter.readcsv <- function(filename) {
   data <- read.csv(filename,
@@ -35,7 +34,7 @@ WinPerfCounter.readcsv <- function(filename) {
   colNames <- colnames(data1)
   for(ii in 3:length(colNames)){
     splitted <- strsplit(colNames[ii], '\\\\')
-    nname <- paste(splitted[[1]][4], splitted[[1]][5], sep = "/")
+    nname <- paste(splitted[[1]][4], splitted[[1]][5], sep = "|")
     colnames(data1)[ii] <- nname
   }
   return(data1);
@@ -52,7 +51,6 @@ WinPerfCounter.alignTime <- function(data, align){
 }
 
 #' @export
-
 WinPerfCounter.miniSummary <- function(data){
   # duration <- max(data$Timestamp) - min(data$Timestamp)
   # recordCount <-length(data)
@@ -63,5 +61,21 @@ WinPerfCounter.miniSummary <- function(data){
   return (df)
 }
 
+# memo: https://technet.microsoft.com/ja-jp/library/cc748731.aspx
+# memo: http://jehupc.exblog.jp/14257174/
 
+
+#' @export
+WinPerfCounter.Metric.CPU <- function(data){
+  col <- c("Timestamp", paste("Processor(_Total)|", c("% Processor Time", "Interrupts/sec"), sep = ""))
+  ret <- data %>% dplyr::select(col)
+  return(ret)
+}
+
+#' @export
+WinPerfCounter.Metric.Memory <- function(data){
+  col <- c("Timestamp", paste("Memory|", c("Transition Faults/sec", "Cache Faults/sec"), sep = ""))
+  ret <- data %>% dplyr::select(col)
+  return(ret)
+}
 

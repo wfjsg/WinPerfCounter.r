@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 library(WinPerfCounter)
+library(ggplot2)
 data <- WinPerfCounter.readcsv("tests/testthat/test.csv")
 summary <- WinPerfCounter.miniSummary(data)
 knitr::opts_chunk$set(echo = TRUE)
@@ -21,8 +22,33 @@ paste("Duration: ", s, units(s))
 paste("DataPoints: ", length(data))
 ```
 
+## Total
 
-## Including Plots
+### CPU
+
+```{r, echo=FALSE}
+d <- WinPerfCounter.Metric.CPU(data)
+g <- ggplot(d, aes(x=Timestamp, y=d$`Processor(_Total)|Interrupts/sec`))
+g + guides(fill = FALSE) + 
+  ylab("Processor Time") + 
+  geom_point()
+```
+
+## Memory
+
+```{r, echo=FALSE}
+d <- WinPerfCounter.Metric.Memory(data)
+g <- ggplot(d, aes(x=Timestamp, y=d$`Memory|Cache Faults/sec`))
+g + guides(fill = FALSE) + 
+  ylab("Transition Faults/sec") + 
+  geom_point()
+```
+
+```{r, echo=FALSE}
+plot(d$Timestamp,
+     d$`Memory|Transition Faults/sec`)
+```
+
 
 You can also embed plots, for example:
 
