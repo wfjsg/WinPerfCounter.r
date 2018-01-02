@@ -74,7 +74,7 @@ WinPerfCounter.Metric.CPU <- function(data){
 
 #' @export
 WinPerfCounter.Metric.Memory <- function(data){
-  col <- c("Timestamp", paste("Memory|", c("Transition Faults/sec", "Cache Faults/sec"), sep = ""))
+  col <- c("Timestamp", paste("Memory|", c("Available Bytes", "Committed Bytes", "Commit Limit"), sep = ""))
   ret <- data %>% dplyr::select(col)
   return(ret)
 }

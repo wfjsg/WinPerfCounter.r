@@ -34,26 +34,10 @@ g + guides(fill = FALSE) +
   geom_point()
 ```
 
-## Memory
+### Memory
 
 ```{r, echo=FALSE}
-d <- WinPerfCounter.Metric.Memory(data)
-g <- ggplot(d, aes(x=Timestamp, y=d$`Memory|Cache Faults/sec`))
-g + guides(fill = FALSE) + 
-  ylab("Transition Faults/sec") + 
-  geom_point()
+memory2 <- memory %>% tidyr::gather(key = metric, value = value, -Timestamp)
+g <- ggplot(memory2, aes(x = Timestamp, y=value))
+g + geom_point(aes(colour = metric)) + ylim(0, 1.6e+10)
 ```
-
-```{r, echo=FALSE}
-plot(d$Timestamp,
-     d$`Memory|Transition Faults/sec`)
-```
-
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
