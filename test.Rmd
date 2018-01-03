@@ -10,7 +10,7 @@ library(WinPerfCounter)
 library(ggplot2)
 data <- WinPerfCounter.readcsv("tests/testthat/test.csv")
 summary <- WinPerfCounter.miniSummary(data)
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=8)
 ```
 
 ## Summary
@@ -43,3 +43,15 @@ memory <- WinPerfCounter.Metric.Memory(data)
 g <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
 g + geom_point(aes(colour = metric)) + ylim(0, 16)
 ```
+
+## Process(Explorer)
+
+## Memory
+
+```{r, echo=FALSE, warning=FALSE}
+memory <- WinPerfCounter.Process.Metric.Memory(data, "explorer")
+g <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
+g + geom_point(aes(colour = metric)) + ylim(0, 1)
+```
+
+

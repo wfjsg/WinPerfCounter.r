@@ -89,4 +89,16 @@ WinPerfCounter.Metric.Memory <- function(data){
   return(ret)
 }
 
+WinPerfCounter.Process.Metric.Memory <- function(data, process){
+  keys <- c("Virtual Bytes", "Working Set", "Private Bytes")
+  col <- c("Timestamp", paste("Process(", process, ")|", keys, sep = ""))
+  outkeys <- c("Timestamp", gsub(" ", "_", keys))
 
+    tmp <- data %>% dplyr::select(col)
+  colnames(tmp) <- outkeys
+  # ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp)
+  ret <- tmp %>%
+    tidyr::gather(key = metric, value = value, -Timestamp) %>%
+    dplyr::mutate(valueInGB = value/(1024*1024*1024))
+  return(ret)
+}
