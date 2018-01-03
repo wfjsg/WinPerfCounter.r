@@ -76,7 +76,7 @@ makeTidyMetric <- function(data, category, metrics){
 
 #' @export
 WinPerfCounter.Metric.CPU <- function(data){
-  keys <- c("% Processor Time")
+  keys <- c("% Processor Time", "% User Time", "% Privileged Time")
   ret <- makeTidyMetric(data, "Processor(_Total)", keys)
   return(ret)
 }

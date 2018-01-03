@@ -8,6 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 library(WinPerfCounter)
 library(ggplot2)
+library(cowplot)
 data <- WinPerfCounter.readcsv("tests/testthat/test.csv")
 summary <- WinPerfCounter.miniSummary(data)
 knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=8)
@@ -24,58 +25,48 @@ paste("DataPoints: ", length(data))
 
 ## Total
 
-### CPU
-
 ```{r, echo=FALSE, warning=FALSE}
-d <- WinPerfCounter.Metric.CPU(data)
-g <- ggplot(d, aes(x=Timestamp, y=value))
-g + ylab("Processor Usage[%]") + geom_point() + ylim(0.0, 100.0)
-```
+cpu <- WinPerfCounter.Metric.CPU(data)
+cpu_chart <- ggplot(cpu, aes(x=Timestamp, y=value)) + ggtitle("System CPU")
+cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0.0, 100.0)
 
-### Memory
-
-Total
-
-```{r, echo=FALSE, warning=FALSE}
 memory <- WinPerfCounter.Metric.Memory(data)
-g <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
-g + geom_point(aes(colour = metric)) + ylim(0, 16)
+memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))  + ggtitle("System Memory")
+memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 16)
+
+plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 ```
 
 ## Process(Explorer)
 
-### CPU
-
 ```{r, echo=FALSE, warning=FALSE}
-cpu <- WinPerfCounter.Process.Metric.CPU(data, "explorer")
-g <- ggplot(cpu, aes(x = Timestamp, y=value))
-g + geom_point(aes(colour = metric)) + ylim(0, 100.0)
+processName <- "explorer"
+cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
+cpu_chart <- ggplot(cpu, aes(x = Timestamp, y=value))
+cpu_chart <- cpu_chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
+cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0, 100.0)
+
+memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
+memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
+memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory", sep = ""))
+memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
+
+plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 ```
 
-### Memory
+## Process(OneDrive)
 
 ```{r, echo=FALSE, warning=FALSE}
-memory <- WinPerfCounter.Process.Metric.Memory(data, "explorer")
-g <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
-g + geom_point(aes(colour = metric)) + ylim(0, 1)
+processName <- "OneDrive"
+cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
+cpu_chart <- ggplot(cpu, aes(x = Timestamp, y=value))
+cpu_chart <- cpu_chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
+cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0, 100.0)
+
+memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
+memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
+memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory", sep = ""))
+memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
+
+plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 ```
-
-## Process (OneDrive)
-
-### CPU
-
-```{r, echo=FALSE, warning=FALSE}
-cpu <- WinPerfCounter.Process.Metric.CPU(data, "OneDrive")
-g <- ggplot(cpu, aes(x = Timestamp, y=value))
-g + geom_point(aes(colour = metric)) + ylim(0, 100.0)
-```
-
-### Memory
-
-```{r, echo=FALSE, warning=FALSE}
-memory <- WinPerfCounter.Process.Metric.Memory(data, "OneDrive")
-g <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
-g + geom_point(aes(colour = metric)) + ylim(0, 1)
-```
-
-
