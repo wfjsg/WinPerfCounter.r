@@ -29,7 +29,8 @@ WinPerfCounter.readcsv <- function(filename) {
   colnames(data)[1] <-"DateTime"
   # as.POSIXct try fromat isonly ... https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.POSIXlt.html
   remainCol <- ncol(data) -1
-  data1 <- cbind("Timestamp" = as.POSIXct(data$DateTime, format="%m/%d/%Y %H:%M:%S"),
+  data1 <- cbind("Timestamp" =
+                   as.POSIXct(data$DateTime, format="%m/%d/%Y %H:%M:%S"),
                  data[,c(1:remainCol)])
   colNames <- colnames(data1)
   for(ii in 3:length(colNames)){
@@ -64,41 +65,44 @@ WinPerfCounter.miniSummary <- function(data){
 # memo: https://technet.microsoft.com/ja-jp/library/cc748731.aspx
 # memo: http://jehupc.exblog.jp/14257174/
 
+makeTidyMetric <- function(data, category, metrics){
+  col <- c("Timestamp", paste(category, "|", metrics, sep = ""))
+  outkeys <- c("Timestamp", gsub(" ", "_", metrics))
+  tmp <- data %>% dplyr::select(col)
+  colnames(tmp) <- outkeys
+  ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp)
+  return(ret)
+}
 
 #' @export
 WinPerfCounter.Metric.CPU <- function(data){
-  col <- c("Timestamp", paste("Processor(_Total)|", c("% Processor Time", "Interrupts/sec"), sep = ""))
-  ret <- data %>% dplyr::select(col)
+  keys <- c("% Processor Time")
+  ret <- makeTidyMetric(data, "Processor(_Total)", keys)
   return(ret)
 }
+
 
 #' @export
 WinPerfCounter.Metric.Memory <- function(data){
   keys <- c("Available Bytes", "Committed Bytes", "Commit Limit")
-  col <- c("Timestamp", paste("Memory|", keys, sep = ""))
-  outkeys <- c("Timestamp", gsub(" ", "_", keys))
-  # ret <- data %>% dplyr::select(col) %>% tidyr::gather(key = metric, value = value, -Timestamp)
-#  ret <- data %>% dplyr::select(col) %>%
-    # dplyr::rename_all(WinPerfCounter.makeKeyOnly()) %>%
- #   dplyr::rename_at(.vars = dplyr::vars(), dplyr::funs(WinPerfCounter.makeKeyOnly(.)))
-    # tidyr::gather(key = metric, value = value, -Timestamp)
-  tmp <- data %>% dplyr::select(col)
-  colnames(tmp) <- outkeys
-  # ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp)
-  ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp) %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
+  ret <- makeTidyMetric(data, "Memory", keys)
+  ret <- ret %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
   return(ret)
 }
 
+
+#' @export
+WinPerfCounter.Process.Metric.CPU <- function(data, process){
+  keys <- c("% Processor Time", "% Privileged Time", "% User Time")
+  ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
+  return(ret)
+}
+
+
+#' @export
 WinPerfCounter.Process.Metric.Memory <- function(data, process){
   keys <- c("Virtual Bytes", "Working Set", "Private Bytes")
-  col <- c("Timestamp", paste("Process(", process, ")|", keys, sep = ""))
-  outkeys <- c("Timestamp", gsub(" ", "_", keys))
-
-    tmp <- data %>% dplyr::select(col)
-  colnames(tmp) <- outkeys
-  # ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp)
-  ret <- tmp %>%
-    tidyr::gather(key = metric, value = value, -Timestamp) %>%
-    dplyr::mutate(valueInGB = value/(1024*1024*1024))
-  return(ret)
+  ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
+  ret <- ret %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
 }
+

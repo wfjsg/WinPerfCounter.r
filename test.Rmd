@@ -26,12 +26,10 @@ paste("DataPoints: ", length(data))
 
 ### CPU
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 d <- WinPerfCounter.Metric.CPU(data)
-g <- ggplot(d, aes(x=Timestamp, y=d$`Processor(_Total)|Interrupts/sec`))
-g + guides(fill = FALSE) + 
-  ylab("Processor Time") + 
-  geom_point()
+g <- ggplot(d, aes(x=Timestamp, y=value))
+g + ylab("Processor Usage[%]") + geom_point() + ylim(0.0, 100.0)
 ```
 
 ### Memory
@@ -46,10 +44,36 @@ g + geom_point(aes(colour = metric)) + ylim(0, 16)
 
 ## Process(Explorer)
 
-## Memory
+### CPU
+
+```{r, echo=FALSE, warning=FALSE}
+cpu <- WinPerfCounter.Process.Metric.CPU(data, "explorer")
+g <- ggplot(cpu, aes(x = Timestamp, y=value))
+g + geom_point(aes(colour = metric)) + ylim(0, 100.0)
+```
+
+### Memory
 
 ```{r, echo=FALSE, warning=FALSE}
 memory <- WinPerfCounter.Process.Metric.Memory(data, "explorer")
+g <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
+g + geom_point(aes(colour = metric)) + ylim(0, 1)
+```
+
+## Process (OneDrive)
+
+### CPU
+
+```{r, echo=FALSE, warning=FALSE}
+cpu <- WinPerfCounter.Process.Metric.CPU(data, "OneDrive")
+g <- ggplot(cpu, aes(x = Timestamp, y=value))
+g + geom_point(aes(colour = metric)) + ylim(0, 100.0)
+```
+
+### Memory
+
+```{r, echo=FALSE, warning=FALSE}
+memory <- WinPerfCounter.Process.Metric.Memory(data, "OneDrive")
 g <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
 g + geom_point(aes(colour = metric)) + ylim(0, 1)
 ```
