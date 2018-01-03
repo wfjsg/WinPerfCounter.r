@@ -9,7 +9,7 @@ output: html_document
 library(WinPerfCounter)
 library(ggplot2)
 library(cowplot)
-data <- WinPerfCounter.readcsv("tests/testthat/test.csv")
+data <- WinPerfCounter.readcsv("../../../../../tests/testthat/test.csv")
 summary <- WinPerfCounter.miniSummary(data)
 knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=8)
 ```
@@ -70,3 +70,49 @@ memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
 
 plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 ```
+
+# Means of Metrics
+
+## CPU
+
+### % Processor Time
+
+いわゆるCPU使用率。
+
+### % User Time & % Privileged Time
+
+それぞれユーザーモードと特権モードで実行されたプロセッサ時間。Priviledged Time が User Timeの15%を超える場合、ディスクアレイがボトルネックである可能性がある。25%を超えるなら、可能性が高い。
+
+
+## Memory
+
+### Available Bytes
+
+プロセスへ割り当て、もしくはシステムにすぐに利用できる物理メモリのサイズを示します。スタンバイ（キャッシュ済み）、空き、ゼロページの一覧にあるメモリの合計です。
+
+### Committed Bytes
+
+コミットされた仮想メモリのサイズをバイト数で表示します。コミット メモリは、領域がディスク ページング ファイルに予約されている物理メモリです。各物理ドライブにはページング ファイルが 1 つ以上あります。このカウンターは、平均値ではなく最新の監視値のみを表示します。
+
+### Committed Limit
+
+ページファイルを拡張せずにコミットできる仮想メモリの合計値です。
+
+
+### Virtual Bytes
+
+プロセスが保持する仮想メモリの総量を示します。メモリマップされたファイル(共有DLLも)や、ページアウトされたデータも含みます。
+
+### Private Bytes
+
+プロセスが要求した仮想メモリ量ですが、メモリマップされたファイルを *含みません* 。 物理メモリに張り付いているメモリ量ではなく、ページアウトされたメモリを含みます。
+
+### Working Set
+
+現在のプロセスが参照する *物理メモリ* の総量です。private bytesと違い、メモリマップされたファイル等各種のリソースを含みます。タスクマネージャの *Memory Usage* で表示されるものと同等です。
+ページアウトされたメモリは *含みません* 。ページフォルトなしで参照可能なメモリ量を示します。
+
+
+
+
+
