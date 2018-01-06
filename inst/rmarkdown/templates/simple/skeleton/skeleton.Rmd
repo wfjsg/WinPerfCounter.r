@@ -9,15 +9,18 @@ output: html_document
 library(WinPerfCounter)
 library(ggplot2)
 library(cowplot)
+library(formattable)
+library(knitr)
+time.Start <- proc.time()
 data <- WinPerfCounter.readcsv("../../../../../tests/testthat/test.csv")
 summary <- WinPerfCounter.miniSummary(data)
 knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=8)
+time.initFinish <- proc.time()
 ```
 
 ## Summary
 
 ```{r echo=FALSE, warning=FALSE, asis=TRUE}
-library(knitr)
 s <- max(data$Timestamp) - min(data$Timestamp)
 paste("Duration: ", s, units(s))
 paste("DataPoints: ", length(data))
@@ -69,6 +72,23 @@ memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory"
 memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
 
 plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
+```
+
+## Report Self
+
+```{r, echo=FALSE}
+time.plotFinished <- proc.time()
+timeOf.read <- ((time.initFinish - time.Start)["elapsed"])
+timeOf.plot <- (time.plotFinished - time.initFinish)["elapsed"]
+
+df <- data.frame(
+  Name = c("ReadFromCSV", "Plotting"),
+  Elapsed = c(timeOf.read, timeOf.plot)
+)
+formattable(df, list(
+#  Name = color_tile("White", "orange"),
+  Elapsed = color_bar("steelblue")
+))
 ```
 
 # Means of Metrics

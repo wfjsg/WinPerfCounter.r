@@ -3,3 +3,4 @@
 .RData
 .Ruserdata
 test.html
+/inst/rmarkdown/templates/simple/skeleton/*.html
