@@ -28,7 +28,7 @@ paste("Duration: ", s, units(s))
 paste("DataPoints: ", length(data))
 ```
 
-## Totalsys
+## Total
 
 ```{r, echo=FALSE, warning=FALSE}
 cpu <- WinPerfCounter.Metric.CPU(data)
