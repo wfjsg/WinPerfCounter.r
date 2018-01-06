@@ -10,12 +10,14 @@ library(WinPerfCounter)
 library(ggplot2)
 library(cowplot)
 library(formattable)
+library(tibble)
 library(knitr)
-time.Start <- proc.time()
+time.lap = list()
+time.lap <- c(time.lap, list(first = proc.time()))
 data <- WinPerfCounter.readcsv("../../../../../tests/testthat/test.csv")
 summary <- WinPerfCounter.miniSummary(data)
 knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=8)
-time.initFinish <- proc.time()
+time.lap <- c(time.lap, list(RawReadFromCSV = proc.time()))
 ```
 
 ## Summary
@@ -26,7 +28,7 @@ paste("Duration: ", s, units(s))
 paste("DataPoints: ", length(data))
 ```
 
-## Total
+## Totalsys
 
 ```{r, echo=FALSE, warning=FALSE}
 cpu <- WinPerfCounter.Metric.CPU(data)
@@ -74,22 +76,6 @@ memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
 plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 ```
 
-## Report Self
-
-```{r, echo=FALSE}
-time.plotFinished <- proc.time()
-timeOf.read <- ((time.initFinish - time.Start)["elapsed"])
-timeOf.plot <- (time.plotFinished - time.initFinish)["elapsed"]
-
-df <- data.frame(
-  Name = c("ReadFromCSV", "Plotting"),
-  Elapsed = c(timeOf.read, timeOf.plot)
-)
-formattable(df, list(
-#  Name = color_tile("White", "orange"),
-  Elapsed = color_bar("steelblue")
-))
-```
 
 # Means of Metrics
 
@@ -132,7 +118,22 @@ formattable(df, list(
 現在のプロセスが参照する *物理メモリ* の総量です。private bytesと違い、メモリマップされたファイル等各種のリソースを含みます。タスクマネージャの *Memory Usage* で表示されるものと同等です。
 ページアウトされたメモリは *含みません* 。ページフォルトなしで参照可能なメモリ量を示します。
 
+## Report Self
 
+```{r, echo=FALSE}
+time.lap <- c(time.lap, list(Plotting = proc.time()))
 
+time.lap.df.tmp <- as.data.frame(
+  t(
+    data.frame(purrr::map(time.lap, ~ c(.["user.self"], .["sys.self"], .["elapsed"])))))
+time.lap.viz <- time.lap.df.tmp %>% rownames_to_column(var = "Stage") %>% dplyr::mutate(
+  user.self = user.self - lag(user.self, default = 0),
+  sys.self  = sys.self - lag(sys.self, default = 0),
+  elapsed   = elapsed - lag(elapsed, default = 0)) %>% dplyr::filter(Stage != "first");
 
-
+formattable(time.lap.viz, list(
+  user.self = color_bar("chartreuse1"),
+  sys.self = color_bar("burlywood4"),
+  elapsed = color_bar("steelblue")
+))
+```
