@@ -57,7 +57,7 @@ WinPerfCounter.formattable(WinPerfCounter.summaryInGB(memory))
 ```{r}
 plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 ```
-
+ 
 ***
 
 # Process(Explorer)
@@ -78,7 +78,8 @@ memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
 ## Summary(CPU)
 
 ```{r}
-WinPerfCounter.formattable(WinPerfCounter.summary(cpu))
+statics <- WinPerfCounter.summary(cpu)
+WinPerfCounter.formattable(statics)
 ```
 
 ## Summary(Memory)[GB]
