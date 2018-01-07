@@ -55,13 +55,13 @@ makeTidyMetric <- function(data, category, metrics){
   outkeys <- c("Timestamp", gsub(" ", "_", metrics))
   tmp <- data %>% dplyr::select(col)
   colnames(tmp) <- outkeys
-  ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp)
+  ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp, factor_key = TRUE)
   return(ret)
 }
 
 #' @export
 WinPerfCounter.Metric.CPU <- function(data){
-  keys <- c("% Processor Time", "% User Time", "% Privileged Time")
+  keys <- c("% Processor Time", "% Privileged Time", "% User Time")
   ret <- makeTidyMetric(data, "Processor(_Total)", keys)
   return(ret)
 }
@@ -86,7 +86,7 @@ WinPerfCounter.Process.Metric.CPU <- function(data, process){
 
 #' @export
 WinPerfCounter.Process.Metric.Memory <- function(data, process){
-  keys <- c("Virtual Bytes", "Working Set", "Private Bytes")
+  keys <- c("Virtual Bytes", "Private Bytes", "Working Set")
   ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
   ret <- ret %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
 }
