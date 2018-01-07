@@ -43,12 +43,14 @@ memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 20)
 ## Summary(CPU)
 
 ```{r}
-WinPerfCounter.formattable(WinPerfCounter.summary(cpu))
+statistics <- WinPerfCounter.summary(cpu)
+WinPerfCounter.formattable(statistics)
 ```
 
 ## Summary(Memory)[GB]
 ```{r}
-WinPerfCounter.formattable(WinPerfCounter.summaryInGB(memory))
+statistics <- WinPerfCounter.summaryInGB(memory)
+WinPerfCounter.formattable(statistics)
 ```
 
 ## Chart
@@ -77,14 +79,15 @@ memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
 ## Summary(CPU)
 
 ```{r}
-statics <- WinPerfCounter.summary(cpu)
-WinPerfCounter.formattable(statics)
+statistics <- WinPerfCounter.summary(cpu)
+WinPerfCounter.formattable(statistics)
 ```
 
 ## Summary(Memory)[GB]
 
 ```{r}
-WinPerfCounter.formattable(WinPerfCounter.summaryInGB(memory))
+statistics <- WinPerfCounter.summaryInGB(memory)
+WinPerfCounter.formattable(statistics)
 ```
 
 ## Chart
@@ -115,12 +118,14 @@ memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
 ## Summary(CPU)
 
 ```{r}
-WinPerfCounter.formattable(WinPerfCounter.summary(cpu))
+statistics <- WinPerfCounter.summary(cpu)
+WinPerfCounter.formattable(statistics)
 ```
 
 ## Summary(Memory)[GB]
 ```{r}
-WinPerfCounter.formattable(WinPerfCounter.summaryInGB(memory))
+statistics <- WinPerfCounter.summaryInGB(memory)
+WinPerfCounter.formattable(statistics)
 ```
 
 ## Chart
@@ -172,7 +177,9 @@ plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 現在のプロセスが参照する *物理メモリ* の総量です。private bytesと違い、メモリマップされたファイル等各種のリソースを含みます。タスクマネージャの *Memory Usage* で表示されるものと同等です。
 ページアウトされたメモリは *含みません* 。ページフォルトなしで参照可能なメモリ量を示します。
 
-## Report Self
+***
+
+# Report Self
 
 ```{r}
 time.lap <- c(time.lap, list(Plotting = proc.time()))
