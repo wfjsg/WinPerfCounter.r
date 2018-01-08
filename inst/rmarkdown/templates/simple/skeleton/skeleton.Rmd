@@ -21,7 +21,7 @@ time.lap <- c(time.lap, list(RawReadFromCSV = proc.time()))
 # 搭載メモリ量
 sysenv.memory <- 8
 # 時間で絞り込む
-viewLimit <- TRUE
+viewLimit <- FALSE
 viewStart <- as.POSIXct("2018/01/07 21:08:00 JST")
 viewEnd   <- as.POSIXct("2018/01/07 21:10:00 JST")
 ```
@@ -50,6 +50,8 @@ if( viewLimit ){
   print(paste("ViewDuration: ", viewDuration, units(viewDuration)))
 }else{
   data <- dataRaw
+  viewStart <- rawStart
+  viewEnd <- rawEnd
 }
 
 ```
@@ -103,6 +105,8 @@ cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0, 100.0)
 memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
 memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
 memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory", sep = ""))
+memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"), 
+                                        x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
 memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
 ```
 
@@ -140,6 +144,8 @@ cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0, 100.0)
 memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
 memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
 memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory", sep = ""))
+memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"), 
+                                        x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
 memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
 
 # plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
