@@ -76,8 +76,6 @@ memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 20)
 
 ## Summary(CPU)
 
-quantile,medianは時系列の順序が0.25, 0.5, 0.75の地点のデータです。ソートされていません。
-
 ```{r}
 statistics <- WinPerfCounter.summary(cpu)
 WinPerfCounter.formattable(statistics)
