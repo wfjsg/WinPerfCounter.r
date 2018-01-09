@@ -13,7 +13,7 @@ WinPerfCounter.summary <- function(df) {
       quantile25 = quantile(., na.rm=T, probs = 0.25),
       mean(.,na.rm=T),
       median(.,na.rm=T),
-      quantile75 = quantile(., na.rm=T, probs = 0.25),
+      quantile75 = quantile(., na.rm=T, probs = 0.75),
       max(.,na.rm=T)))
   return(statistics);
 }
