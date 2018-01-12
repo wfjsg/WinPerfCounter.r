@@ -22,10 +22,20 @@ time.lap <- c(time.lap, list(RawReadFromCSV = proc.time()))
 
 # 搭載メモリ量
 sysenv.memory <- 8
+sysenv.memory.chartlimit <- 20
 # 時間で絞り込む
 viewLimit <- FALSE
 viewStart <- as.POSIXct("2018/01/07 21:08:00 JST")
 viewEnd   <- as.POSIXct("2018/01/07 21:10:00 JST")
+# チャートの設定を変える
+processes <- list(
+  explorer = list( 
+       cpu.scale.auto = TRUE, cpu.min = 0, cpu.max=100,
+       memory.scale.auto = TRUE, memory.min = 0, memory.max = 0.25), 
+  onedrive = list( 
+       cpu.scale.auto = TRUE, cpu.min = 0, cpu.max=100,
+       memory.scale.auto = TRUE, memory.min = 0, memory.max = 50)
+)
 ```
 
 # Summary
@@ -68,10 +78,11 @@ cpu_chart <- ggplot(cpu, aes(x=Timestamp, y=value)) + ggtitle("System CPU")
 cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0.0, 100.0)
 memory <- WinPerfCounter.Metric.Memory(data)
 memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))  + ggtitle("System Memory")
-memory_chart <- memory_chart + geom_hline(yintercept = sysenv.memory, linetype="dashed", colour="blue")
+memory_chart <- memory_chart + geom_hline(
+  yintercept = sysenv.memory, linetype="dashed", colour="blue")
 memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"), 
                                         x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
-memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 20)
+memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, sysenv.memory.chartlimit)
 ```
 
 ## Summary(CPU)
@@ -99,10 +110,14 @@ plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 
 ```{r}
 processName <- "explorer"
+chart.conf <- processes[[processName]]
 cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
 cpu_chart <- ggplot(cpu, aes(x = Timestamp, y=value))
 cpu_chart <- cpu_chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
-cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0, 100.0)
+cpu_chart <- cpu_chart + geom_point(aes(colour = metric))
+if( chart.conf$cpu.scale.auto == FALSE ){
+  cpu_chart <- cpu_chart + ylim(chart.conf$cpu.min, chart.conf$cpu.max)
+}
 
 memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
 memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
@@ -110,7 +125,10 @@ memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory"
 memory_chart <- memory_chart + geom_hline(yintercept = sysenv.memory, linetype="dashed", colour="blue")
 memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"), 
                                         x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
-memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
+memory_chart <- memory_chart + geom_point(aes(colour = metric))
+if( chart.conf$memory.scale.auto == FALSE ){
+  memory_chart <- memory_chart + ylim(chart.conf$memory.min, chart.conf$memory.max)
+}
 ```
 
 ## Summary(CPU)
@@ -142,7 +160,9 @@ processName <- "OneDrive"
 cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
 cpu_chart <- ggplot(cpu, aes(x = Timestamp, y=value))
 cpu_chart <- cpu_chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
-cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0, 100.0)
+if( chart.conf$cpu.scale.auto == FALSE ){
+  cpu_chart <- cpu_chart + ylim(chart.conf$cpu.min, chart.conf$cpu.max)
+}
 
 memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
 memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
@@ -150,9 +170,10 @@ memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory"
 memory_chart <- memory_chart + geom_hline(yintercept = sysenv.memory, linetype="dashed", colour="blue")
 memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"), 
                                         x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
-memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, 1)
-
-# plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
+memory_chart <- memory_chart + geom_point(aes(colour = metric))
+if( chart.conf$memory.scale.auto == FALSE ){
+  memory_chart <- memory_chart + ylim(chart.conf$memory.min, chart.conf$memory.max)
+}
 ```
 
 ## Summary(CPU)
