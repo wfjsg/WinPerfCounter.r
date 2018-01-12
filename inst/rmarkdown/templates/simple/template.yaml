@@ -1,1 +1,4 @@
 name: SimpleMyTemplate
+description: Simple System Summary
+create_dir: true
+
