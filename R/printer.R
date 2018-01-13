@@ -3,7 +3,7 @@ library(foreach)
 library(stringr)
 library(dplyr)
 library(formattable)
-library(ggplot)
+library(ggplot2)
 library(ggthemes)
 library(tibble)
 
