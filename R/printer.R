@@ -3,6 +3,8 @@ library(foreach)
 library(stringr)
 library(dplyr)
 library(formattable)
+library(ggplot)
+library(ggthemes)
 library(tibble)
 
 #' @export
@@ -43,3 +45,34 @@ WinPerfCounter.formattable <- function(df) {
   ))
 }
 
+#' @export
+WinPerfCounter.Process.PlotCPU <- function(data, processes, cpu.core, processName){
+  chart.conf <- processes[[processName]]
+  cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
+  cpu_chart <- ggplot(cpu, aes(x = Timestamp, y=value))
+  cpu_chart <- cpu_chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
+  cpu_chart <- cpu_chart + geom_point(aes(colour = metric))
+  if( chart.conf$cpu.scale.auto ){
+    cpu_chart <- cpu_chart + ylim(0, 100 * sysenv.cpucore)
+  }else{
+    cpu_chart <- cpu_chart + ylim(chart.conf$cpu.min, chart.conf$cpu.max)
+  }
+  cpu_chart <- cpu_chart + theme_gray()
+  return(cpu_chart)
+}
+
+WinPerfCounter.Process.PlotMemory <- function(data, processes, cpu.core, processName){
+  chart.conf <- processes[[processName]]
+  memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
+  memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
+  memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory", sep = ""))
+  memory_chart <- memory_chart + geom_hline(yintercept = sysenv.memory, linetype="dashed", colour="b lue")
+  memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"),
+                                          x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
+  memory_chart <- memory_chart + geom_point(aes(colour = metric))
+  if( chart.conf$memory.scale.auto == FALSE ){
+    memory_chart <- memory_chart + ylim(chart.conf$memory.min, chart.conf$memory.max)
+  }
+  memory_chart <- memory_chart + theme_gray()
+  return(memory_chart)
+}
