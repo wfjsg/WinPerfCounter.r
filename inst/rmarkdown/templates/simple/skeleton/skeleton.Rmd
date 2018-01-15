@@ -144,21 +144,23 @@ plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 
 ```{r}
 processName <- "explorer"
-cpu_chart <- WinPerfCounter.Process.PlotCPU(data, processes, sysenv.cpu.core, processName)
-memory_chart <- WinPerfCounter.Process.PlotMemory(data, processes, sysenv.memory, processName)
+p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
+cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
+p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
+memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
 ```
 
 ## Summary(CPU)
 
 ```{r}
-statistics <- WinPerfCounter.summary(cpu)
+statistics <- WinPerfCounter.summary(p.cpu)
 WinPerfCounter.formattable(statistics)
 ```
 
 ## Summary(Memory)[GB]
 
 ```{r}
-statistics <- WinPerfCounter.summaryInGB(memory)
+statistics <- WinPerfCounter.summaryInGB(p.memory)
 WinPerfCounter.formattable(statistics)
 ```
 
@@ -174,20 +176,22 @@ plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 
 ```{r}
 processName <- "OneDrive"
-cpu_chart <- WinPerfCounter.Process.PlotCPU(data, processes, sysenv.cpu.core, processName)
-memory_chart <- WinPerfCounter.Process.PlotMemory(data, processes, sysenv.memory, processName)
+p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
+cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
+p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
+memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
 ```
 
 ## Summary(CPU)
 
 ```{r}
-statistics <- WinPerfCounter.summary(cpu)
+statistics <- WinPerfCounter.summary(p.cpu)
 WinPerfCounter.formattable(statistics)
 ```
 
 ## Summary(Memory)[GB]
 ```{r}
-statistics <- WinPerfCounter.summaryInGB(memory)
+statistics <- WinPerfCounter.summaryInGB(p.memory)
 WinPerfCounter.formattable(statistics)
 ```
 

@@ -46,9 +46,8 @@ WinPerfCounter.formattable <- function(df) {
 }
 
 #' @export
-WinPerfCounter.Process.PlotCPU <- function(data, processes, cpu.core, processName){
+WinPerfCounter.Process.PlotCPU <- function(cpu, processes, cpu.core, processName){
   chart.conf <- processes[[processName]]
-  cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
   cpu_chart <- ggplot(cpu, aes(x = Timestamp, y=value))
   cpu_chart <- cpu_chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
   cpu_chart <- cpu_chart + geom_point(aes(colour = metric))
@@ -61,9 +60,8 @@ WinPerfCounter.Process.PlotCPU <- function(data, processes, cpu.core, processNam
   return(cpu_chart)
 }
 
-WinPerfCounter.Process.PlotMemory <- function(data, processes, cpu.core, processName){
+WinPerfCounter.Process.PlotMemory <- function(memory, processes, cpu.core, processName){
   chart.conf <- processes[[processName]]
-  memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
   memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
   memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory", sep = ""))
   memory_chart <- memory_chart + geom_hline(yintercept = sysenv.memory, linetype="dashed", colour="b lue")
