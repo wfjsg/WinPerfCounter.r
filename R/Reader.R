@@ -2,7 +2,8 @@ library(lubridate)
 library(foreach)
 library(stringr)
 library(tidyverse)
-library(data.table)
+library(readr)
+library(tidyverse)
 
 #' @export
 WinPerfCounter.readcsv <- function(filename) {
@@ -123,7 +124,7 @@ VMMap.read.body <- function(filename){
     dplyr::mutate_at(numberCol, ~ dplyr::if_else(is.na(.), "0", .)) %>%
     dplyr::mutate_at(numberCol, ~ as.integer(.)) %>%
     dplyr::mutate_at(stringCol, ~ dplyr::if_else(is.na(.), "", .)) %>%
-    dplyr::mutate(ParentOrChild = if_else(str_detect(Address, "^  "), "Child", "Parent")) %>%
+    dplyr::mutate(ParentOrChild = dplyr::if_else(str_detect(Address, "^  "), "Child", "Parent")) %>%
     dplyr::mutate(Address = str_replace(Address, "^  ", "")) %>%
     dplyr::mutate(AddressInt = strtoi(Address, base=16)) %>%
     dplyr::mutate(Type = str_replace_all(Type, " ", "_"))

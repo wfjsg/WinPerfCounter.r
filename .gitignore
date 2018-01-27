@@ -4,3 +4,4 @@
 .Ruserdata
 test.html
 /inst/rmarkdown/templates/simple/skeleton/*.html
+/inst/rmarkdown/templates/SingleVmMap/skeleton/*.html

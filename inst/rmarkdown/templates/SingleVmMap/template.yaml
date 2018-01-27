@@ -1,0 +1,4 @@
+name: vmmap_output_analyze
+description: vmmap.exe output csv
+create_dir: true
+
