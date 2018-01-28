@@ -11,6 +11,6 @@ Encoding: UTF-8
 LazyData: true
 Suggests:
   testthat
-Depends: lubridate,foreach,stringr,data.table
+Depends: lubridate,foreach,stringr,data.table,readr
 
 

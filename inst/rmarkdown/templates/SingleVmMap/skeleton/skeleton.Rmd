@@ -1,7 +1,7 @@
 ---
 title: "SimpleSystemSummary"
 author: "WataruFujishige"
-date: "2017/12/31"
+date: "2018/01/28"
 output: html_document
 params:
   csvfile: "../../../../../tests/testthat/rstudio.csv"
@@ -9,13 +9,11 @@ params:
 
 ```{r setup, include=FALSE}
 library(WinPerfCounter)
-library(readr)
 library(ggplot2)
-library(ggthemes)
 library(cowplot)
 library(formattable)
-library(gtable)
 library(gridExtra)
+library(dplyr)
 library(grid)
 library(tibble)
 library(knitr)
@@ -38,24 +36,44 @@ time.lap <- c(time.lap, list(RawReadFromCSV = proc.time()))
 # Summary
 
 ```{r}
+
+
 header %>% 
-  kable("html") %>%  
+  dplyr::mutate_all(~ format(., big.mark=",", scientific=F)) %>% 
+  # dplyr::mutate(Committed = cell_spec(Committed, "html", align = "l", color = "white")) %>% 
+  kable("html", escape = FALSE, align = c('l', rep('r', ncol(header) -1))) %>%  
   kable_styling(bootstrap_options = c("striped", "hover")) %>% 
-  row_spec(2, background = "#D8ADFF") %>% 
-  row_spec(3, background = "#B0D7FF") %>% 
-  row_spec(4, background = "#DDEEFF") %>% 
-  row_spec(5, background = "#FF9664") %>% 
-  row_spec(6, background = "#D4E27A") %>% 
-  row_spec(7, background = "#FFC080") %>% 
-  row_spec(8, background = "#F4F400") %>% 
-  row_spec(9, background = "#D2A0A0") %>% 
-  row_spec(10, background = "#D2D2D2")
+  row_spec(2, background = "#D8ADFF") %>% # Image
+  row_spec(3, background = "#B0D7FF") %>% # Mapped_File
+  row_spec(4, background = "#DDEEFF") %>% # Shareable
+  row_spec(5, background = "#FF9664") %>% # Heap
+  row_spec(6, background = "#D4E27A") %>% # Managed Heap
+  row_spec(7, background = "#FFC080") %>% # Stack
+  row_spec(8, background = "#F4F400") %>% # Private Data
+  row_spec(9, background = "#D2A0A0") %>% # Page Table
+  row_spec(10, background = "#D2D2D2")    # Unusable
 
 ```
 
+## Chart
 
-***
+```{r}  
+colorVector <- c("Image" = "#D8ADFF", "Mapped_File"  = "#B0D7FF", "Shareable"  = "#DDEEFF", "Heap" = "#FF9664", 
+                 "Managed Heap" = "#D4E27A", "Stack" = "#FFC080", "Private_Data" = "#F4F400", "Page_Table" = "#D2A0A0", "Unusable" = "#D2D2D2")
+gdata <- header %>% 
+  dplyr::filter(Type != "Total" & Type != "Free" & Type != "Unusable") %>% 
+  dplyr::mutate(Type = factor(Type, levels=
+                                c("Image", "Mapped_File", "Shareable", "Heap", "Managed_Heap", "Stack", 
+                                  "Private_Data", "Page_Table", "Unusable"))) %>% 
+  dplyr::select(Type, Committed, Private, Total_WS) %>%
+  tidyr::gather(key = category, value = value, -Type, factor_key = TRUE) %>% 
+  dplyr::mutate(value = value /(1024))
 
+g <- ggplot(gdata, aes(x = category, y = value, fill = Type) )
+g <- g + geom_bar(stat = "identity") + ylab("Memory[MB]")
+g <- g + scale_fill_manual(values = colorVector)
+g
+```
 
 
 ***
