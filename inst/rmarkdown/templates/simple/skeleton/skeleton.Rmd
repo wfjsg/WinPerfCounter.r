@@ -17,9 +17,25 @@ library(tibble)
 library(knitr)
 time.lap = list()
 time.lap <- c(time.lap, list(first = proc.time()))
-dataRaw <- WinPerfCounter.readcsv(params$csvfile)
-knitr::opts_chunk$set(echo = FALSE, warning=FALSE, fig.width=12, fig.height=8)
+
+chunk.lap <<- list()
+knitr::knit_hooks$set(chunk_lap = function(before, options, envir){
+  print("aaaa")
+  if( before ){
+    chunk.lap[[options$label]] <<- proc.time()
+  }else{
+    # time.lls[sss] <- "error"
+    chunk.lap[[options$label]] <<- proc.time() - chunk.lap[[options$label]]
+  }
+  print(chunk.lap)
+})
 time.lap <- c(time.lap, list(RawReadFromCSV = proc.time()))
+
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, fig.width=12, fig.height=8, chunk_lap = TRUE)
+```
+
+```{r read_and_showHeader}
+dataRaw <- WinPerfCounter.readcsv(params$csvfile)
 
 # --------------------------
 # CPUの論理コア数と搭載メモリ量、システム全体に書くメモリ量
@@ -124,6 +140,8 @@ memory_chart <- memory_chart + theme_gray()
 ```{r}
 statistics <- WinPerfCounter.summary(cpu)
 WinPerfCounter.formattable(statistics)
+
+print(chunk.lap)
 ```
 
 ## Summary(Memory)[GB]
@@ -209,7 +227,7 @@ plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 
 ### % Processor Time
 
-いわゆるCPU使用率。
+いわゆるCPU使用率。System全体の場合には最大100%で、プロセスごとの場合にはコア数×100%が最大です。
 
 ### % User Time & % Privileged Time
 
@@ -230,7 +248,6 @@ plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 
 ページファイルを拡張せずにコミットできる仮想メモリの合計値です。
 
-
 ### Virtual Bytes
 
 プロセスが保持する仮想メモリの総量を示します。メモリマップされたファイル(共有DLLも)や、ページアウトされたデータも含みます。
@@ -245,6 +262,7 @@ plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
 ページアウトされたメモリは *含みません* 。ページフォルトなしで参照可能なメモリ量を示します。
 
 ***
+
 
 # Report Self
 
