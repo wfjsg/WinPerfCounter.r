@@ -35,7 +35,7 @@ time.lap <- c(time.lap, list(RawReadFromCSV = proc.time()))
 dataRaw <- WinPerfCounter.readcsv(params$csvfile)
 ```
 
-```{r resampling}
+```{r Configure}
 time.lap <- c(time.lap, list(Configure= proc.time()))
 
 # --------------------------
@@ -49,17 +49,19 @@ viewStart <- as.POSIXct("2018/01/07 21:08:00 JST")
 viewEnd   <- as.POSIXct("2018/01/07 21:10:00 JST")
 
 # n秒にviewPlotLimit以上のプロットしないようにランダムで間引く。マイナスにすると制限をしない
-viewPlotLimit <- 5
+viewPlotLimit <- -1
 # チャートの設定を変える。CPUは1コアあたりの使用率(4コアだと400%になる)。メモリの単位が[GB]
 processes <- list(
   explorer = list( 
        cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 100,
        memory.scale.auto = TRUE, memory.min = 0, memory.max = 0.25,
-       iops.scale.auto = TRUE, iops.min = 0, iops.max = 600), 
+       iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
+       iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600), 
   OneDrive = list( 
        cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 10,
        memory.scale.auto = TRUE, memory.min = 0, memory.max = 1,
-       iops.scale.auto = TRUE, iops.min = 0, iops.max = 600)
+       iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
+       iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600)
 )
 ```
 
@@ -173,6 +175,8 @@ p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
 memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
 p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName)
 iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
+p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName)
+iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, processes, sysenv.memory, processName)
 ```
 
 ## Summary(CPU)
@@ -196,10 +200,17 @@ statistics <- WinPerfCounter.summary(p.iops)
 WinPerfCounter.formattable(statistics)
 ```
 
+## Summary(IO MegaByte/s)
+
+```{r showProcess1IOBytes}
+statistics <- WinPerfCounter.summaryInMB(p.iobytes)
+WinPerfCounter.formattable(statistics)
+```
+
 ## Chart
 
 ```{r showProcess1Chart}
-plot_grid(cpu_chart, memory_chart, iops_chart, ncol=1, align="v")
+plot_grid(cpu_chart, memory_chart, iops_chart, iobytes_chart, ncol=1, align="v")
 time.lap <- c(time.lap, list(process1 = proc.time()))
 ```
 
@@ -215,6 +226,8 @@ p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
 memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
 p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName)
 iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
+p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName)
+iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, processes, sysenv.memory, processName)
 ```
 
 ## Summary(CPU)
@@ -237,10 +250,17 @@ statistics <- WinPerfCounter.summary(p.iops)
 WinPerfCounter.formattable(statistics)
 ```
 
+## Summary(IO MegaByte/s)
+
+```{r showProcess2IOBytes}
+statistics <- WinPerfCounter.summaryInMB(p.iobytes)
+WinPerfCounter.formattable(statistics)
+```
+
 ## Chart
 
 ```{r showProcess2Chart}
-plot_grid(cpu_chart, memory_chart, iops_chart, ncol=1, align="v")
+plot_grid(cpu_chart, memory_chart, iops_chart, iobytes_chart, ncol=1, align="v")
 time.lap <- c(time.lap, list(process2 = proc.time()))
 ```
 

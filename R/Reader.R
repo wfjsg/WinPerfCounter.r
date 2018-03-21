@@ -101,12 +101,10 @@ WinPerfCounter.Process.Metric.IOPS <- function(data, process){
 WinPerfCounter.Process.Metric.IOBytes <- function(data, process){
   keys <- c("IO Write Bytes/sec", "IO Read Bytes/sec", "IO Other Bytes/sec")
   ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
-  ret <- ret %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
+  ret <- ret %>% dplyr::mutate(valueInMB = value/(1024*1024))
   return(ret)
 }
 
-
-# IO Write Operations/sec
 
 #' @export
 VMMap.read.header <- function(filename){

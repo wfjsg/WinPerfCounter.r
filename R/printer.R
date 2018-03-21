@@ -21,6 +21,19 @@ WinPerfCounter.summary <- function(df) {
 }
 
 #' @export
+WinPerfCounter.summaryInMB <- function(df) {
+  statistics <- df %>% dplyr::group_by(metric) %>%
+    dplyr::summarise_at(dplyr::vars(valueInMB), dplyr::funs(
+      min(.,na.rm=T),
+      quantile25 = quantile(., na.rm=T, probs = 0.25),
+      mean(.,na.rm=T),
+      median(.,na.rm=T),
+      quantile75 = quantile(., na.rm=T, probs = 0.75),
+      max(.,na.rm=T)))
+  return(statistics);
+}
+
+#' @export
 WinPerfCounter.summaryInGB <- function(df) {
   statistics <- df %>% dplyr::group_by(metric) %>%
     dplyr::summarise_at(dplyr::vars(valueInGB), dplyr::funs(
@@ -89,5 +102,17 @@ WinPerfCounter.Process.PlotIOPS <- function(iops, processes, cpu.core, processNa
   return(chart)
 }
 
+#' @export
+WinPerfCounter.Process.PlotIOBytes <- function(iobytes, processes, cpu.core, processName){
+  chart.conf <- processes[[processName]]
+  chart <- ggplot(iobytes, aes(x = Timestamp, y=valueInMB))
+  chart <- chart + ggtitle(paste("Process(", processName, ") IO Mega Byte/s", sep = ""))
+  chart <- chart + geom_point(aes(colour = metric))
+  if( chart.conf$iobytes.scale.auto == FALSE ){
+    chart <- chart + ylim(chart.conf$iobytes.min, chart.conf$iobytes.max)
+  }
+  chart <- chart + theme_gray()
+  return(chart)
+}
 
 
