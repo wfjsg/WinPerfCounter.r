@@ -59,8 +59,11 @@ processes <- list(
        cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 10,
        memory.scale.auto = TRUE, memory.min = 0, memory.max = 1)
 )
+```
 
+```{r cutAndResampling}
 # --------------------------
+# 関心のある時間帯に絞る
 rawStart <- min(dataRaw$Timestamp)
 rawEnd <- max(dataRaw$Timestamp) 
 duration <- rawEnd - rawStart
@@ -73,22 +76,22 @@ if( viewLimit ){
   viewStart <- rawStart
   viewEnd <- rawEnd
 }
-```
-
-# Summary
-
-```{r showHeader, asis=TRUE}
+# 間引き（サンプリング周波数を落とす）: 沢山プロットすると時間がかかるので。
 if( viewPlotLimit > 0 ){
   plotPerSeconds <- as.numeric(difftime(viewEnd, viewStart, units="secs")) / nrow(data)
   rate <- viewPlotLimit / plotPerSeconds
   if( rate > 1.0 ){
     after <- nrow(data) / rate
     pickNum <- sample(nrow(data), after)
+    time.lap <- c(time.lap, list(Resampling = proc.time()))
     data <- data[pickNum,]
   }
 }
+```
 
+# Summary
 
+```{r showHeader, asis=TRUE}
 {
   print(paste("StartDate : ", rawStart))
   print(paste("EndDate   : ", rawEnd))
@@ -153,6 +156,7 @@ WinPerfCounter.formattable(statistics)
 
 ```{r showTotalChart}
 plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
+time.lap <- c(time.lap, list(procTotal = proc.time()))
 ```
  
 ***
@@ -185,6 +189,7 @@ WinPerfCounter.formattable(statistics)
 
 ```{r showProcess1Chart}
 plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
+time.lap <- c(time.lap, list(process1 = proc.time()))
 ```
 
 ***
@@ -216,6 +221,7 @@ WinPerfCounter.formattable(statistics)
 
 ```{r showProcess2Chart}
 plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
+time.lap <- c(time.lap, list(process2 = proc.time()))
 ```
 
 ***
@@ -276,8 +282,6 @@ formattable(chunk.lap.viz)
 ### Per Phase
 
 ```{r}
-time.lap <- c(time.lap, list(Plotting = proc.time()))
-
 time.lap.df.tmp <- as.data.frame(
   t(
     data.frame(purrr::map(time.lap, ~ c(.["user.self"], .["sys.self"], .["elapsed"])))))
