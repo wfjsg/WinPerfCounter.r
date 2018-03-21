@@ -7,11 +7,12 @@ library(tidyverse)
 
 #' @export
 WinPerfCounter.readcsv <- function(filename) {
-  data <- read.csv(filename,
-                check.names = FALSE,
-                header = TRUE,
-                as.is = TRUE)
-                # fileEncoding = "UTF-8-BOM")
+  data <- read_csv(filename, locale = locale(encoding = "cp932"), col_types = cols())
+  #data <- read.csv(filename,
+  #              check.names = FALSE,
+  #              header = TRUE,
+  #              as.is = TRUE)
+  #              # fileEncoding = "UTF-8-BOM")
   options(digits.secs=3)
   colnames(data)[1] <-"DateTime"
   # as.POSIXct try fromat isonly ... https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.POSIXlt.html

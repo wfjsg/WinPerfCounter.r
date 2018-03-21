@@ -272,9 +272,10 @@ time.lap <- c(time.lap, list(process2 = proc.time()))
 ## Report Self
 
 ### Per chunk
-```{r}
+```{r chunk_lap}
 chunk.lap.viz <- data.frame(t( 
-  data.frame(purrr::map(chunk.lap, ~c(.["user.self"], .["sys.self"], .["elapsed"])) )) ) %>% 
+  data.frame(purrr::map(chunk.lap[1:(length(chunk.lap)-1)], 
+                        ~c(.["user.self"], .["sys.self"], .["elapsed"])) )) ) %>% 
   rownames_to_column(var = "Stage")
 formattable(chunk.lap.viz)
 ```
