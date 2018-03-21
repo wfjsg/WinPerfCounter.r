@@ -54,10 +54,12 @@ viewPlotLimit <- 5
 processes <- list(
   explorer = list( 
        cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 100,
-       memory.scale.auto = TRUE, memory.min = 0, memory.max = 0.25), 
+       memory.scale.auto = TRUE, memory.min = 0, memory.max = 0.25,
+       iops.scale.auto = TRUE, iops.min = 0, iops.max = 600), 
   OneDrive = list( 
        cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 10,
-       memory.scale.auto = TRUE, memory.min = 0, memory.max = 1)
+       memory.scale.auto = TRUE, memory.min = 0, memory.max = 1,
+       iops.scale.auto = TRUE, iops.min = 0, iops.max = 600)
 )
 ```
 
@@ -169,6 +171,8 @@ p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
 cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
 p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
 memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
+p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName)
+iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
 ```
 
 ## Summary(CPU)
@@ -185,10 +189,17 @@ statistics <- WinPerfCounter.summaryInGB(p.memory)
 WinPerfCounter.formattable(statistics)
 ```
 
+## Summary(IOPS)
+
+```{r showProcess1IOPS}
+statistics <- WinPerfCounter.summary(p.iops)
+WinPerfCounter.formattable(statistics)
+```
+
 ## Chart
 
 ```{r showProcess1Chart}
-plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
+plot_grid(cpu_chart, memory_chart, iops_chart, ncol=1, align="v")
 time.lap <- c(time.lap, list(process1 = proc.time()))
 ```
 
@@ -202,6 +213,8 @@ p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
 cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
 p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
 memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
+p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName)
+iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
 ```
 
 ## Summary(CPU)
@@ -217,10 +230,17 @@ statistics <- WinPerfCounter.summaryInGB(p.memory)
 WinPerfCounter.formattable(statistics)
 ```
 
+## Summary(IOPS)
+
+```{r showProcess2IOPS}
+statistics <- WinPerfCounter.summary(p.iops)
+WinPerfCounter.formattable(statistics)
+```
+
 ## Chart
 
 ```{r showProcess2Chart}
-plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
+plot_grid(cpu_chart, memory_chart, iops_chart, ncol=1, align="v")
 time.lap <- c(time.lap, list(process2 = proc.time()))
 ```
 
@@ -266,8 +286,17 @@ time.lap <- c(time.lap, list(process2 = proc.time()))
 現在のプロセスが参照する *物理メモリ* の総量です。private bytesと違い、メモリマップされたファイル等各種のリソースを含みます。タスクマネージャの *Memory Usage* で表示されるものと同等です。
 ページアウトされたメモリは *含みません* 。ページフォルトなしで参照可能なメモリ量を示します。
 
-***
+### IO Read Operations/sec,  IO Write Operations/sec & ～ Byte/s
 
+* プロセスが行った IOPS を表します。
+* ネットワーク / ディスクなどを区別できません。
+* メモリは含みません。
+* Otherは、読み込みと書き込み以外（制御）などを表します。
+
+※なお元データの「IO Data Operations/sec」は、IO Data Read Operation/s と IO Data Write Operations/sの合算です。
+
+
+***
 
 ## Report Self
 

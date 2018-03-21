@@ -41,10 +41,6 @@ WinPerfCounter.alignTime <- function(data, align){
 
 #' @export
 WinPerfCounter.miniSummary <- function(data){
-  # duration <- max(data$Timestamp) - min(data$Timestamp)
-  # recordCount <-length(data)
-  # ret <- list(duration = duration, recordCount = recordCount)
-
   sm <- summary(data)
   df <- t(data.frame(unclass(sm), check.names = FALSE, stringAsFactors = FALSE))
   return (df)
@@ -93,6 +89,24 @@ WinPerfCounter.Process.Metric.Memory <- function(data, process){
   ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
   ret <- ret %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
 }
+
+#' @export
+WinPerfCounter.Process.Metric.IOPS <- function(data, process){
+  keys <- c("IO Write Operations/sec", "IO Read Operations/sec", "IO Other Operations/sec")
+  ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
+  return(ret)
+}
+
+#' @export
+WinPerfCounter.Process.Metric.IOBytes <- function(data, process){
+  keys <- c("IO Write Bytes/sec", "IO Read Bytes/sec", "IO Other Bytes/sec")
+  ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
+  ret <- ret %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
+  return(ret)
+}
+
+
+# IO Write Operations/sec
 
 #' @export
 VMMap.read.header <- function(filename){

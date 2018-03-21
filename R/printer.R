@@ -60,6 +60,7 @@ WinPerfCounter.Process.PlotCPU <- function(cpu, processes, cpu.core, processName
   return(cpu_chart)
 }
 
+#' @export
 WinPerfCounter.Process.PlotMemory <- function(memory, processes, cpu.core, processName){
   chart.conf <- processes[[processName]]
   memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
@@ -74,3 +75,19 @@ WinPerfCounter.Process.PlotMemory <- function(memory, processes, cpu.core, proce
   memory_chart <- memory_chart + theme_gray()
   return(memory_chart)
 }
+
+#' @export
+WinPerfCounter.Process.PlotIOPS <- function(iops, processes, cpu.core, processName){
+  chart.conf <- processes[[processName]]
+  chart <- ggplot(iops, aes(x = Timestamp, y=value))
+  chart <- chart + ggtitle(paste("Process(", processName, ") IOPS", sep = ""))
+  chart <- chart + geom_point(aes(colour = metric))
+  if( chart.conf$iops.scale.auto == FALSE ){
+    chart <- chart + ylim(chart.conf$iops.min, chart.conf$iops.max)
+  }
+  chart <- chart + theme_gray()
+  return(chart)
+}
+
+
+
