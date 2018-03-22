@@ -126,12 +126,12 @@ if( viewPlotLimit > 0 ){
 # Total
 
 ```{r tidyTotal}
-cpu <- WinPerfCounter.Metric.CPU(data)
+cpu <- WinPerfCounter.SampleAtMinute( WinPerfCounter.Metric.CPU(data) )
 cpu_chart <- ggplot(cpu, aes(x=Timestamp, y=value)) + ggtitle("System CPU")
 cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0.0, 100.0)
 cpu_chart <- cpu_chart + theme_gray()
 
-memory <- WinPerfCounter.Metric.Memory(data)
+memory <- WinPerfCounter.SampleAtMinuteGB( WinPerfCounter.Metric.Memory(data) )
 memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))  + ggtitle("System Memory")
 memory_chart <- memory_chart + geom_hline(
   yintercept = sysenv.memory, linetype="dashed", colour="blue")

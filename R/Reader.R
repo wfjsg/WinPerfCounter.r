@@ -63,7 +63,28 @@ makeTidyMetric <- function(data, category, metrics){
   outkeys <- c("Timestamp", gsub(" ", "_", metrics))
   tmp <- data %>% dplyr::select(col)
   colnames(tmp) <- outkeys
-  ret <- tmp %>% tidyr::gather(key = metric, value = value, -Timestamp, factor_key = TRUE)
+  ret <- tmp %>%
+    tidyr::gather(key = metric, value = value, -Timestamp, factor_key = TRUE)
+  return(ret)
+}
+
+#' @export
+WinPerfCounter.SampleAtMinute <- function(data){
+  ret <- data %>%
+    dplyr::mutate(classTimestamp = round_date(Timestamp, "minute")) %>%
+    dplyr::group_by(classTimestamp, metric) %>%
+    dplyr::summarise_at(dplyr::vars(value), dplyr::funs(max)) %>%
+    dplyr::mutate(Timestamp = classTimestamp)
+  return(ret)
+}
+
+#' @export
+WinPerfCounter.SampleAtMinuteGB <- function(data){
+  ret <- data %>%
+    dplyr::mutate(classTimestamp = round_date(Timestamp, "minute")) %>%
+    dplyr::group_by(classTimestamp, metric) %>%
+    dplyr::summarise_at(dplyr::vars(valueInGB), dplyr::funs(max)) %>%
+    dplyr::mutate(Timestamp = classTimestamp)
   return(ret)
 }
 
