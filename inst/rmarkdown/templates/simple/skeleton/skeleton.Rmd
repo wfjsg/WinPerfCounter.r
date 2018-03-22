@@ -324,6 +324,12 @@ chunk.lap.viz <- data.frame(t(
   data.frame(purrr::map(chunk.lap[1:(length(chunk.lap)-1)], 
                         ~c(.["user.self"], .["sys.self"], .["elapsed"])) )) ) %>% 
   rownames_to_column(var = "Stage")
+
+chunk.total <- chunk.lap.viz %>% 
+  dplyr::summarise_at(dplyr::vars(-1), dplyr::funs(sum)) %>% 
+  dplyr::mutate(Stage = "Total")
+chunk.lap.viz <- rbind(chunk.lap.viz, chunk.total)
+
 formattable(chunk.lap.viz)
 ```
 
@@ -336,7 +342,12 @@ time.lap.df.tmp <- as.data.frame(
 time.lap.viz <- time.lap.df.tmp %>% rownames_to_column(var = "Stage") %>% dplyr::mutate(
   user.self = user.self - lag(user.self, default = 0),
   sys.self  = sys.self - lag(sys.self, default = 0),
-  elapsed   = elapsed - lag(elapsed, default = 0)) %>% dplyr::filter(Stage != "first");
+  elapsed   = elapsed - lag(elapsed, default = 0)) %>% dplyr::filter(Stage != "first")
+
+lap.total <- time.lap.viz %>% 
+  dplyr::summarise_at(dplyr::vars(-1), dplyr::funs(sum)) %>% 
+  dplyr::mutate(Stage = "Total")
+time.lap.viz <- rbind(time.lap.viz, lap.total)
 
 formattable(time.lap.viz, list(
   user.self = color_bar("azure1"),
