@@ -1,4 +1,5 @@
 library(stringr)
+library(tibble)
 library(testthat)
 library(WinPerfCounter)
 
@@ -18,7 +19,7 @@ test_that("rounding_date", {
 })
 
 test_that("read.vmmap", {
-  filename <- "tests/testthat/rstudio.csv"
+  filename <- "testthat/rstudio.csv"
   header <- VMMap.read.header(filename)
   expect_equal( header[header$Type == "Total", "Size"], tibble(Size = as.integer(c(866884))) )
   expect_equal( header[header$Type == "Page_Table", "Private_WS"], tibble(Private_WS = as.integer(c(2564))))
