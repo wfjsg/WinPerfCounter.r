@@ -4,7 +4,7 @@ author: "WataruFujishige"
 date: "2017/12/31"
 output: html_document
 params:
-  csvfile: "../../../../../tests/testthat/test2.csv"
+  csvfile: "../../../../../tests/testthat/huge_value.csv"
 ---
 
 ```{r setup, include=FALSE}

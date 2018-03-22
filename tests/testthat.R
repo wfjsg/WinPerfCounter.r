@@ -18,6 +18,18 @@ test_that("rounding_date", {
     c("2017-12-30 20:45:00 JST", "2017-12-30 21:00:00 JST")))
 })
 
+test_that("huge_value", {
+  a <- WinPerfCounter.readcsv("testthat/huge_value.csv")
+  b <- WinPerfCounter.alignTime(a, "15 minutes")
+  expect_equal(b, as.POSIXct(
+    c("2017-12-30 20:45:00 JST", "2017-12-30 21:00:00 JST")))
+})
+
+test_that("read_csv", {
+  a <- WinPerfCounter.readcsv("testthat/huge_value.csv")
+})
+
+
 test_that("read.vmmap", {
   filename <- "testthat/rstudio.csv"
   header <- VMMap.read.header(filename)
