@@ -45,9 +45,10 @@ sysenv.memory.chartlimit <- 100
 viewLimit <- FALSE
 viewStart <- as.POSIXct("2018/01/07 21:08:00 JST")
 viewEnd   <- as.POSIXct("2018/01/07 21:10:00 JST")
+# リサンプリングする間隔。FALSEだとしません。
+# resampleInterval <- "minute"
+resampleInterval <- FALSE
 
-# n秒にviewPlotLimit以上のプロットしないようにランダムで間引く。マイナスにすると制限をしない
-viewPlotLimit <- -1
 # チャートの設定を変える。CPUは1コアあたりの使用率(4コアだと400%になる)。メモリの単位が[GB]
 processes <- list(
   explorer = list( 
@@ -79,17 +80,6 @@ if( viewLimit ){
   viewStart <- rawStart
   viewEnd <- rawEnd
 }
-# 間引き（サンプリング周波数を落とす）: 沢山プロットすると時間がかかるので。
-if( viewPlotLimit > 0 ){
-  plotPerSeconds <- as.numeric(difftime(viewEnd, viewStart, units="secs")) / nrow(data)
-  rate <- viewPlotLimit / plotPerSeconds
-  if( rate > 1.0 ){
-    after <- nrow(data) / rate
-    pickNum <- sample(nrow(data), after)
-    time.lap <- c(time.lap, list(Resampling = proc.time()))
-    data <- data[pickNum,]
-  }
-}
 ```
 
 # Summary
@@ -109,15 +99,6 @@ if( viewPlotLimit > 0 ){
   }else{
     print(paste("Start and End No-Limit"))
   }
-  if( viewPlotLimit > 0 ){
-    print(paste("DataPointDensity: ", plotPerSeconds, "point / sec"))
-    print(paste("DesiredDensity:", viewPlotLimit, "point / sec"))
-    if( rate > 1.0 ){
-      print(paste("ViewPoints      : ", nrow(data), " With Limit"))
-    }else{
-      print(paste("ViewPoints      : ", nrow(data), " With NO-Limit"))
-    }
-  }
 }
 ```
 
@@ -126,12 +107,14 @@ if( viewPlotLimit > 0 ){
 # Total
 
 ```{r tidyTotal}
-cpu <- WinPerfCounter.SampleAtMinute( WinPerfCounter.Metric.CPU(data) )
+# cpu <- WinPerfCounter.SampleAtMinute( WinPerfCounter.Metric.CPU(data) )
+cpu <- WinPerfCounter.Metric.CPU(data, resampleInterval)
 cpu_chart <- ggplot(cpu, aes(x=Timestamp, y=value)) + ggtitle("System CPU")
 cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0.0, 100.0)
 cpu_chart <- cpu_chart + theme_gray()
 
-memory <- WinPerfCounter.SampleAtMinuteGB( WinPerfCounter.Metric.Memory(data) )
+# memory <- WinPerfCounter.SampleAtMinuteGB( WinPerfCounter.Metric.Memory(data) )
+memory <- WinPerfCounter.Metric.Memory(data, resampleInterval)
 memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))  + ggtitle("System Memory")
 memory_chart <- memory_chart + geom_hline(
   yintercept = sysenv.memory, linetype="dashed", colour="blue")
@@ -167,13 +150,13 @@ time.lap <- c(time.lap, list(procTotal = proc.time()))
 
 ```{r tidyProcess1}
 processName <- "explorer"
-p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
+p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
 cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
-p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
+p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName, resampleInterval)
 memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
-p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName)
+p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName, resampleInterval)
 iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
-p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName)
+p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName, resampleInterval)
 iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, processes, sysenv.memory, processName)
 ```
 
@@ -218,13 +201,13 @@ time.lap <- c(time.lap, list(process1 = proc.time()))
 
 ```{r tidyProcess2}
 processName <- "OneDrive"
-p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName)
+p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
 cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
-p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName)
+p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName, resampleInterval)
 memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
-p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName)
+p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName, resampleInterval)
 iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
-p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName)
+p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName, resampleInterval)
 iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, processes, sysenv.memory, processName)
 ```
 

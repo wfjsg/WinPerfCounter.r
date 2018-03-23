@@ -68,20 +68,32 @@ makeTidyMetric <- function(data, category, metrics){
   return(ret)
 }
 
-#' @export
-WinPerfCounter.SampleAtMinute <- function(data){
+
+smartResample <- function(data, interval){
   ret <- data %>%
-    dplyr::mutate(classTimestamp = round_date(Timestamp, "minute")) %>%
+    dplyr::mutate(classTimestamp = round_date(Timestamp, interval)) %>%
     dplyr::group_by(classTimestamp, metric) %>%
     dplyr::summarise_at(dplyr::vars(value), dplyr::funs(max)) %>%
     dplyr::mutate(Timestamp = classTimestamp)
   return(ret)
 }
 
+
 #' @export
-WinPerfCounter.SampleAtMinuteGB <- function(data){
+smartResampleMB <- function(data, interval){
   ret <- data %>%
-    dplyr::mutate(classTimestamp = round_date(Timestamp, "minute")) %>%
+    dplyr::mutate(classTimestamp = round_date(Timestamp, interval)) %>%
+    dplyr::group_by(classTimestamp, metric) %>%
+    dplyr::summarise_at(dplyr::vars(valueInMB), dplyr::funs(max)) %>%
+    dplyr::mutate(Timestamp = classTimestamp)
+  return(ret)
+}
+
+
+#' @export
+smartResampleGB <- function(data, interval){
+  ret <- data %>%
+    dplyr::mutate(classTimestamp = round_date(Timestamp, interval)) %>%
     dplyr::group_by(classTimestamp, metric) %>%
     dplyr::summarise_at(dplyr::vars(valueInGB), dplyr::funs(max)) %>%
     dplyr::mutate(Timestamp = classTimestamp)
@@ -89,50 +101,74 @@ WinPerfCounter.SampleAtMinuteGB <- function(data){
 }
 
 #' @export
-WinPerfCounter.Metric.CPU <- function(data){
+WinPerfCounter.Metric.CPU <- function(data, resample = FALSE){
   keys <- c("% Processor Time", "% Privileged Time", "% User Time")
   ret <- makeTidyMetric(data, "Processor(_Total)", keys)
-  return(ret)
+  if( resample != FALSE ){
+    return( smartResample(ret, resample) )
+  }else{
+    return(ret)
+  }
 }
 
 
 #' @export
-WinPerfCounter.Metric.Memory <- function(data){
+WinPerfCounter.Metric.Memory <- function(data, resample = FALSE){
   keys <- c("Available Bytes", "Committed Bytes", "Commit Limit")
   ret <- makeTidyMetric(data, "Memory", keys)
   ret <- ret %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
-  return(ret)
+  if( resample != FALSE ){
+    return( smartResampleGB(ret, resample) )
+  }else{
+    return(ret)
+  }
 }
 
-
 #' @export
-WinPerfCounter.Process.Metric.CPU <- function(data, process){
+WinPerfCounter.Process.Metric.CPU <- function(data, process, resample = FALSE){
   keys <- c("% Processor Time", "% Privileged Time", "% User Time")
   ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
-  return(ret)
+  if( resample != FALSE ){
+    return( smartResample(ret, resample) )
+  }else{
+    return(ret)
+  }
 }
 
 
 #' @export
-WinPerfCounter.Process.Metric.Memory <- function(data, process){
+WinPerfCounter.Process.Metric.Memory <- function(data, process, resample = FALSE){
   keys <- c("Virtual Bytes", "Private Bytes", "Working Set")
   ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
   ret <- ret %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
+  if( resample != FALSE ){
+    return( smartResampleGB(ret, resample) )
+  }else{
+    return(ret)
+  }
 }
 
 #' @export
-WinPerfCounter.Process.Metric.IOPS <- function(data, process){
+WinPerfCounter.Process.Metric.IOPS <- function(data, process, resample = FALSE){
   keys <- c("IO Write Operations/sec", "IO Read Operations/sec", "IO Other Operations/sec")
   ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
-  return(ret)
+  if( resample != FALSE ){
+    return( smartResample(ret, resample) )
+  }else{
+    return(ret)
+  }
 }
 
 #' @export
-WinPerfCounter.Process.Metric.IOBytes <- function(data, process){
+WinPerfCounter.Process.Metric.IOBytes <- function(data, process, resample = FALSE){
   keys <- c("IO Write Bytes/sec", "IO Read Bytes/sec", "IO Other Bytes/sec")
   ret <- makeTidyMetric(data, paste("Process(", process, ")", sep = ""), keys)
   ret <- ret %>% dplyr::mutate(valueInMB = value/(1024*1024))
-  return(ret)
+  if( resample != FALSE ){
+    return( smartResampleMB(ret, resample) )
+  }else{
+    return(ret)
+  }
 }
 
 
