@@ -45,11 +45,11 @@ sysenv.memory.chartlimit <- 100
 viewLimit <- FALSE
 viewStart <- as.POSIXct("2018/01/07 21:08:00 JST")
 viewEnd   <- as.POSIXct("2018/01/07 21:10:00 JST")
-# リサンプリングする間隔。FALSEだとしません。
+# リサンプリングする間隔。FALSEだとリサンプリングしない
 # resampleInterval <- "minute"
 resampleInterval <- FALSE
 
-# チャートの設定を変える。CPUは1コアあたりの使用率(4コアだと400%になる)。メモリの単位が[GB]
+# チャートの設定を変える。CPUは1コアあたりの使用率(4コアだと400%になる)。メモリの単位は[GB]
 processes <- list(
   explorer = list( 
        cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 100,
@@ -99,6 +99,11 @@ if( viewLimit ){
   }else{
     print(paste("Start and End No-Limit"))
   }
+  if( resampleInterval == FALSE){
+    print(paste("Resampling: Disabled"))
+  }else{
+    print(paste("Resampling: ", resampleInterval))
+  }
 }
 ```
 
@@ -110,7 +115,7 @@ if( viewLimit ){
 # cpu <- WinPerfCounter.SampleAtMinute( WinPerfCounter.Metric.CPU(data) )
 cpu <- WinPerfCounter.Metric.CPU(data, resampleInterval)
 cpu_chart <- ggplot(cpu, aes(x=Timestamp, y=value)) + ggtitle("System CPU")
-cpu_chart <- cpu_chart + geom_point(aes(colour = metric)) + ylim(0.0, 100.0)
+cpu_chart <- cpu_chart + geom_point(aes(colour = metric), alpha = 0.7) + ylim(0.0, 100.0)
 cpu_chart <- cpu_chart + theme_gray()
 
 # memory <- WinPerfCounter.SampleAtMinuteGB( WinPerfCounter.Metric.Memory(data) )
@@ -120,7 +125,7 @@ memory_chart <- memory_chart + geom_hline(
   yintercept = sysenv.memory, linetype="dashed", colour="blue")
 memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"), 
                                         x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
-memory_chart <- memory_chart + geom_point(aes(colour = metric)) + ylim(0, sysenv.memory.chartlimit)
+memory_chart <- memory_chart + geom_point(aes(colour = metric), alpha = 0.7) + ylim(0, sysenv.memory.chartlimit)
 memory_chart <- memory_chart + theme_gray()
 ```
 

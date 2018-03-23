@@ -63,7 +63,7 @@ WinPerfCounter.Process.PlotCPU <- function(cpu, processes, cpu.core, processName
   chart.conf <- processes[[processName]]
   cpu_chart <- ggplot(cpu, aes(x = Timestamp, y=value))
   cpu_chart <- cpu_chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
-  cpu_chart <- cpu_chart + geom_point(aes(colour = metric))
+  cpu_chart <- cpu_chart + geom_point(aes(colour = metric), alpha = 0.7)
   if( chart.conf$cpu.scale.auto ){
     cpu_chart <- cpu_chart + ylim(0, 100 * sysenv.cpucore)
   }else{
@@ -81,7 +81,7 @@ WinPerfCounter.Process.PlotMemory <- function(memory, processes, cpu.core, proce
   memory_chart <- memory_chart + geom_hline(yintercept = sysenv.memory, linetype="dashed", colour="b lue")
   memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"),
                                           x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
-  memory_chart <- memory_chart + geom_point(aes(colour = metric))
+  memory_chart <- memory_chart + geom_point(aes(colour = metric), alpha = 0.7)
   if( chart.conf$memory.scale.auto == FALSE ){
     memory_chart <- memory_chart + ylim(chart.conf$memory.min, chart.conf$memory.max)
   }
@@ -94,7 +94,7 @@ WinPerfCounter.Process.PlotIOPS <- function(iops, processes, cpu.core, processNa
   chart.conf <- processes[[processName]]
   chart <- ggplot(iops, aes(x = Timestamp, y=value))
   chart <- chart + ggtitle(paste("Process(", processName, ") IOPS", sep = ""))
-  chart <- chart + geom_point(aes(colour = metric))
+  chart <- chart + geom_point(aes(colour = metric), alpha = 0.7)
   if( chart.conf$iops.scale.auto == FALSE ){
     chart <- chart + ylim(chart.conf$iops.min, chart.conf$iops.max)
   }
@@ -107,7 +107,7 @@ WinPerfCounter.Process.PlotIOBytes <- function(iobytes, processes, cpu.core, pro
   chart.conf <- processes[[processName]]
   chart <- ggplot(iobytes, aes(x = Timestamp, y=valueInMB))
   chart <- chart + ggtitle(paste("Process(", processName, ") IO Mega Byte/s", sep = ""))
-  chart <- chart + geom_point(aes(colour = metric))
+  chart <- chart + geom_point(aes(colour = metric), alpha = 0.7)
   if( chart.conf$iobytes.scale.auto == FALSE ){
     chart <- chart + ylim(chart.conf$iobytes.min, chart.conf$iobytes.max)
   }
