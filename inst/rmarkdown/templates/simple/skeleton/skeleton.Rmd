@@ -77,11 +77,17 @@ eventRange <- as.POSIXct(c(
 eventRangeStart <- eventRange[c(TRUE, FALSE)]
 eventRangeEnd <- eventRange[c(FALSE, TRUE)]
 
-decorateVerticalLines <- function(plot) {
-  if( length(eventVerticalLines) == 0 ){
-    return(plot);
+decorate <- function(plot) {
+  if( length(eventVerticalLines) > 1 ){
+    plot <- plot + geom_vline(xintercept = eventVerticalLines, alpha = 0.5, color = "coral2")
   }
-  plot <- plot + geom_vline(xintercept = eventVerticalLines, alpha = 0.5, color = "coral2")
+  print("annotate1")
+  if( length(eventRangeStart) > 1 ){
+    print("annotate2")
+    plot <- plot + annotate("rect", xmin = eventRangeStart, xmax = eventRangeEnd, 
+                            ymin = 0, ymax =65000, 
+                            fill = "yellow", alpha = 0.3)
+  }
   return(plot);
 }
 ```
@@ -138,18 +144,21 @@ cpu <- WinPerfCounter.Metric.CPU(data, resampleInterval)
 cpu_chart <- ggplot(cpu, aes(x=Timestamp, y=value)) + ggtitle("System CPU")
 cpu_chart <- cpu_chart + geom_point(aes(colour = metric), alpha = 0.7) + ylim(0.0, 100.0)
 cpu_chart <- cpu_chart + theme_gray()
-cpu_chart <- decorateVerticalLines(cpu_chart)
+cpu_chart <- decorate(cpu_chart)
 
+cpu_chart <- cpu_chart + annotate("rect", xmin = eventRangeStart, xmax = eventRangeEnd, ymin = 0, ymax =65000, 
+                                  fill = "yello")
+    
 
 # memory <- WinPerfCounter.SampleAtMinuteGB( WinPerfCounter.Metric.Memory(data) )
 memory <- WinPerfCounter.Metric.Memory(data, resampleInterval)
 memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))  + ggtitle("System Memory")
+memory_chart <- decorate(memory_chart) 
 memory_chart <- memory_chart + geom_hline(
   yintercept = sysenv.memory, linetype="dashed", colour="blue")
 memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"), 
                                         x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
 memory_chart <- memory_chart + geom_point(aes(colour = metric), alpha = 0.7) + ylim(0, sysenv.memory.chartlimit)
-memory_chart <- decorateVerticalLines(memory_chart) 
 memory_chart <- memory_chart + theme_gray()
 ```
 
@@ -181,19 +190,19 @@ time.lap <- c(time.lap, list(procTotal = proc.time()))
 processName <- "explorer"
 p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
 cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
-cpu_chart <- decorateVerticalLines(cpu_chart)
+cpu_chart <- decorate(cpu_chart)
 
 p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName, resampleInterval)
 memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
-memory_chart <- decorateVerticalLines(memory_chart)
+memory_chart <- decorate(memory_chart)
 
 p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName, resampleInterval)
 iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
-iops_chart <- decorateVerticalLines(iops_chart)
+iops_chart <- decorate(iops_chart)
 
 p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName, resampleInterval)
 iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, processes, sysenv.memory, processName)
-iobytes_chart <- decorateVerticalLines(iobytes_chart)
+iobytes_chart <- decorate(iobytes_chart)
 ```
 
 ## Summary(CPU)
@@ -239,16 +248,16 @@ time.lap <- c(time.lap, list(process1 = proc.time()))
 processName <- "OneDrive"
 p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
 cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
-cpu_chart <- decorateVerticalLines(cpu_chart)
+cpu_chart <- decorate(cpu_chart)
 p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName, resampleInterval)
 memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
-memory_chart <- decorateVerticalLines(memory_chart)
+memory_chart <- decorate(memory_chart)
 p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName, resampleInterval)
 iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
-iops_chart <- decorateVerticalLines(iops_chart)
+iops_chart <- decorate(iops_chart)
 p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName, resampleInterval)
 iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, processes, sysenv.memory, processName)
-iobytes_chart <- decorateVerticalLines(iobytes_chart)
+iobytes_chart <- decorate(iobytes_chart)
 ```
 
 ## Summary(CPU)
