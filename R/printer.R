@@ -102,7 +102,6 @@ WinPerfCounter.Process.PlotIOPS <- function(iops, plotConfig, processName){
     chart <- chart + ylim(chart.conf$iops.min, chart.conf$iops.max)
   }
   chart <- chart + theme_gray()
-  print(paste("x = ", layer_scales(chart)$y$range$range, "]", sep = ""))
   chart <- WinPerfCounter.DecorateForEvent(chart, plotConfig)
   return(chart)
 }
