@@ -77,16 +77,14 @@ eventRange <- as.POSIXct(c(
 eventRangeStart <- eventRange[c(TRUE, FALSE)]
 eventRangeEnd <- eventRange[c(FALSE, TRUE)]
 
-decorate <- function(plot) {
+decorate <- function(plot, ymin = 0.0, ymax = 100.0) {
   if( length(eventVerticalLines) > 1 ){
-    plot <- plot + geom_vline(xintercept = eventVerticalLines, alpha = 0.5, color = "coral2")
+    plot <- plot + geom_vline(xintercept = eventVerticalLines, alpha = 0.4, color = "coral2")
   }
-  print("annotate1")
   if( length(eventRangeStart) > 1 ){
-    print("annotate2")
     plot <- plot + annotate("rect", xmin = eventRangeStart, xmax = eventRangeEnd, 
-                            ymin = 0, ymax =65000, 
-                            fill = "yellow", alpha = 0.3)
+                            ymin = ymin, ymax =ymax, 
+                            fill = "burlywood", alpha = 0.3)
   }
   return(plot);
 }
@@ -139,21 +137,15 @@ if( viewLimit ){
 # Total
 
 ```{r tidyTotal}
-# cpu <- WinPerfCounter.SampleAtMinute( WinPerfCounter.Metric.CPU(data) )
 cpu <- WinPerfCounter.Metric.CPU(data, resampleInterval)
 cpu_chart <- ggplot(cpu, aes(x=Timestamp, y=value)) + ggtitle("System CPU")
+cpu_chart <- decorate(cpu_chart, 0, 100.0)
 cpu_chart <- cpu_chart + geom_point(aes(colour = metric), alpha = 0.7) + ylim(0.0, 100.0)
 cpu_chart <- cpu_chart + theme_gray()
-cpu_chart <- decorate(cpu_chart)
 
-cpu_chart <- cpu_chart + annotate("rect", xmin = eventRangeStart, xmax = eventRangeEnd, ymin = 0, ymax =65000, 
-                                  fill = "yello")
-    
-
-# memory <- WinPerfCounter.SampleAtMinuteGB( WinPerfCounter.Metric.Memory(data) )
 memory <- WinPerfCounter.Metric.Memory(data, resampleInterval)
 memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))  + ggtitle("System Memory")
-memory_chart <- decorate(memory_chart) 
+memory_chart <- decorate(memory_chart, 0, 100.0) 
 memory_chart <- memory_chart + geom_hline(
   yintercept = sysenv.memory, linetype="dashed", colour="blue")
 memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"), 
