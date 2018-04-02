@@ -61,32 +61,35 @@ WinPerfCounter.formattable <- function(df) {
 #' @export
 WinPerfCounter.Process.PlotCPU <- function(cpu, plotConfig, processName){
   chart.conf <- plotConfig$process[[processName]]
-  cpu_chart <- ggplot(cpu, aes(x = Timestamp, y=value))
-  cpu_chart <- cpu_chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
-  cpu_chart <- cpu_chart + geom_point(aes(colour = metric), alpha = 0.7)
+  chart <- ggplot(cpu, aes(x = Timestamp, y=value))
+  chart <- chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
+  chart <- chart + geom_point(aes(colour = metric), alpha = 0.7)
+  chart <- chart + theme_gray()
   if( chart.conf$cpu.scale.auto ){
-    cpu_chart <- cpu_chart + ylim(0, 100 * plotConfig$cpucore)
+    ymax <-100 * plotConfig$cpucore
   }else{
-    cpu_chart <- cpu_chart + ylim(chart.conf$cpu.min, chart.conf$cpu.max)
+    ymax <- chart.conf$cpu.max
   }
-  cpu_chart <- cpu_chart + theme_gray()
-  return(cpu_chart)
+  chart <- chart + ylim(chart.conf$cpu.min, ymax)
+  chart <- WinPerfCounter.DecorateForEvent(chart, plotConfig)
+  return(chart)
 }
 
 #' @export
 WinPerfCounter.Process.PlotMemory <- function(memory, plotConfig, processName){
   chart.conf <- plotConfig$process[[processName]]
-  memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
-  memory_chart <- memory_chart + ggtitle(paste("Process(", processName, ") Memory", sep = ""))
-  memory_chart <- memory_chart + geom_hline(yintercept = plotConfig$memory, linetype="dashed", colour="b lue")
-  memory_chart <- memory_chart + annotate("text", label=paste(plotConfig$memory, "GB Installed"),
+  chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))
+  chart <- chart + ggtitle(paste("Process(", processName, ") Memory", sep = ""))
+  chart <- chart + geom_hline(yintercept = plotConfig$memory, linetype="dashed", colour="b lue")
+  chart <- chart + annotate("text", label=paste(plotConfig$memory, "GB Installed"),
                                           x=viewStart, y=plotConfig$memory, hjust = 0.0, vjust = -0.5)
-  memory_chart <- memory_chart + geom_point(aes(colour = metric), alpha = 0.7)
+  chart <- chart + geom_point(aes(colour = metric), alpha = 0.7)
   if( chart.conf$memory.scale.auto == FALSE ){
-    memory_chart <- memory_chart + ylim(chart.conf$memory.min, chart.conf$memory.max)
+    chart <- chart + ylim(chart.conf$memory.min, chart.conf$memory.max)
   }
-  memory_chart <- memory_chart + theme_gray()
-  return(memory_chart)
+  chart <- chart + theme_gray()
+  chart <- WinPerfCounter.DecorateForEvent(chart, plotConfig)
+  return(chart)
 }
 
 #' @export
@@ -99,6 +102,8 @@ WinPerfCounter.Process.PlotIOPS <- function(iops, plotConfig, processName){
     chart <- chart + ylim(chart.conf$iops.min, chart.conf$iops.max)
   }
   chart <- chart + theme_gray()
+  print(paste("x = ", layer_scales(chart)$y$range$range, "]", sep = ""))
+  chart <- WinPerfCounter.DecorateForEvent(chart, plotConfig)
   return(chart)
 }
 
@@ -112,7 +117,20 @@ WinPerfCounter.Process.PlotIOBytes <- function(iobytes, plotConfig, processName)
     chart <- chart + ylim(chart.conf$iobytes.min, chart.conf$iobytes.max)
   }
   chart <- chart + theme_gray()
+  chart <- WinPerfCounter.DecorateForEvent(chart, plotConfig)
   return(chart)
 }
 
+#' @export
+WinPerfCounter.DecorateForEvent <- function(plot, plotConfig){
+  if( length(plotConfig$eventVerticalLines) > 1 ){
+    plot <- plot + geom_vline(xintercept = plotConfig$eventVerticalLines, alpha = 0.4, color = "coral2")
+  }
+  if( length(eventRangeStart) > 1 ){
+    plot <- plot + annotate("rect", xmin = eventRangeStart, xmax = eventRangeEnd,
+                            ymin = -Inf, ymax = Inf,
+                            fill = "burlywood", alpha = 0.3)
+  }
+  return(plot);
+}
 
