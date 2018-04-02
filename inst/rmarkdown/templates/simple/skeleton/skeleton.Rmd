@@ -38,9 +38,29 @@ time.lap <- c(time.lap, list(read = proc.time()))
 ```{r Configure}
 # --------------------------
 # CPUの論理コア数と搭載メモリ量、システム全体に書くメモリ量
-sysenv.cpucore <- 8
-sysenv.memory <- 8
-sysenv.memory.chartlimit <- 100
+plotConfig <- list(
+  cpucore = 8,
+  memory = 8,
+  memory.chartlimit = 32,
+  process = list(
+    explorer = list( 
+         cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 100,
+         memory.scale.auto = TRUE, memory.min = 0, memory.max = 0.25,
+         iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
+         iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600), 
+    OneDrive = list( 
+         cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 10,
+         memory.scale.auto = TRUE, memory.min = 0, memory.max = 1,
+         iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
+         iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600)
+  ),
+  eventVerticalLines = as.POSIXct(c(
+    "2018/01/07 21:07:00", "2018/01/07 21:10:20"), format="%Y/%m/%d %H:%M:%OS"),
+  eventRange = as.POSIXct(c(
+    "2018/01/07 21:07:05", "2018/01/07 21:09:00",
+    "2018/01/07 21:12:00", "2018/01/07 21:12:30"), format="%Y/%m/%d %H:%M:%OS")
+  )
+
 # 時間で絞り込む。
 viewLimit <- FALSE
 viewStart <- as.POSIXct("2018/01/07 21:08:00 JST")
@@ -64,22 +84,12 @@ processes <- list(
 )
 time.lap <- c(time.lap, list(Configure= proc.time()))
 
-eventVerticalLines <- as.POSIXct(c(
-  "2018/01/07 21:07:00",
-  "2018/01/07 21:10:20"
-), format="%Y/%m/%d %H:%M:%OS")
-
-eventRange <- as.POSIXct(c(
-  "2018/01/07 21:07:05", "2018/01/07 21:09:00",
-  "2018/01/07 21:12:00", "2018/01/07 21:12:30"
-), format="%Y/%m/%d %H:%M:%OS")
-
-eventRangeStart <- eventRange[c(TRUE, FALSE)]
-eventRangeEnd <- eventRange[c(FALSE, TRUE)]
+eventRangeStart <- plotConfig$eventRange[c(TRUE, FALSE)]
+eventRangeEnd <- plotConfig$eventRange[c(FALSE, TRUE)]
 
 decorate <- function(plot, ymin = 0.0, ymax = 100.0) {
-  if( length(eventVerticalLines) > 1 ){
-    plot <- plot + geom_vline(xintercept = eventVerticalLines, alpha = 0.4, color = "coral2")
+  if( length(plotConfig$eventVerticalLines) > 1 ){
+    plot <- plot + geom_vline(xintercept = plotConfig$eventVerticalLines, alpha = 0.4, color = "coral2")
   }
   if( length(eventRangeStart) > 1 ){
     plot <- plot + annotate("rect", xmin = eventRangeStart, xmax = eventRangeEnd, 
@@ -144,13 +154,14 @@ cpu_chart <- cpu_chart + geom_point(aes(colour = metric), alpha = 0.7) + ylim(0.
 cpu_chart <- cpu_chart + theme_gray()
 
 memory <- WinPerfCounter.Metric.Memory(data, resampleInterval)
-memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB))  + ggtitle("System Memory")
+memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB)) + ggtitle("System Memory")
 memory_chart <- decorate(memory_chart, 0, 100.0) 
 memory_chart <- memory_chart + geom_hline(
-  yintercept = sysenv.memory, linetype="dashed", colour="blue")
-memory_chart <- memory_chart + annotate("text", label=paste(sysenv.memory, "GB Installed"), 
-                                        x=viewStart, y=sysenv.memory, hjust = 0.0, vjust = -0.5)
-memory_chart <- memory_chart + geom_point(aes(colour = metric), alpha = 0.7) + ylim(0, sysenv.memory.chartlimit)
+  yintercept = plotConfig$memory, linetype="dashed", colour="blue")
+memory_chart <- memory_chart + annotate("text", label=paste(plotConfig$memory, "GB Installed"), 
+                                        x=viewStart, y=plotConfig$memory, hjust = 0.0, vjust = -0.5)
+memory_chart <- memory_chart + geom_point(aes(colour = metric), alpha = 0.7)
+memory_chart <- memory_chart + ylim(0, plotConfig$memory.chartlimit)
 memory_chart <- memory_chart + theme_gray()
 ```
 
@@ -181,19 +192,19 @@ time.lap <- c(time.lap, list(procTotal = proc.time()))
 ```{r tidyProcess1}
 processName <- "explorer"
 p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
-cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
-cpu_chart <- decorate(cpu_chart)
+cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, plotConfig, processName)
+plotcpu_chart <- decorate(cpu_chart)
 
 p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName, resampleInterval)
-memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
+memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, plotConfig, processName)
 memory_chart <- decorate(memory_chart)
 
 p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName, resampleInterval)
-iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
+iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, plotConfig, processName)
 iops_chart <- decorate(iops_chart)
 
 p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName, resampleInterval)
-iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, processes, sysenv.memory, processName)
+iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, plotConfig, processName)
 iobytes_chart <- decorate(iobytes_chart)
 ```
 
@@ -239,16 +250,16 @@ time.lap <- c(time.lap, list(process1 = proc.time()))
 ```{r tidyProcess2}
 processName <- "OneDrive"
 p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
-cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, processes, sysenv.cpu.core, processName)
+cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, plotConfig, processName)
 cpu_chart <- decorate(cpu_chart)
 p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName, resampleInterval)
-memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, processes, sysenv.memory, processName)
+memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, plotConfig, processName)
 memory_chart <- decorate(memory_chart)
 p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName, resampleInterval)
-iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, processes, sysenv.memory, processName)
+iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, plotConfig, processName)
 iops_chart <- decorate(iops_chart)
 p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName, resampleInterval)
-iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, processes, sysenv.memory, processName)
+iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, plotConfig, processName)
 iobytes_chart <- decorate(iobytes_chart)
 ```
 
