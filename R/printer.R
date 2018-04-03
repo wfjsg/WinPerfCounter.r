@@ -122,10 +122,12 @@ WinPerfCounter.Process.PlotIOBytes <- function(iobytes, plotConfig, processName)
 
 #' @export
 WinPerfCounter.DecorateForEvent <- function(plot, plotConfig){
-  if( length(plotConfig$eventVerticalLines) > 1 ){
+  eventRangeStart <- plotConfig$eventRange[c(TRUE, FALSE)]
+  eventRangeEnd <- plotConfig$eventRange[c(FALSE, TRUE)]
+  if( length(plotConfig$eventVerticalLines) > 0 ){
     plot <- plot + geom_vline(xintercept = plotConfig$eventVerticalLines, alpha = 0.4, color = "coral2")
   }
-  if( length(eventRangeStart) > 1 ){
+  if( length(eventRangeStart) > 0 ){
     plot <- plot + annotate("rect", xmin = eventRangeStart, xmax = eventRangeEnd,
                             ymin = -Inf, ymax = Inf,
                             fill = "burlywood", alpha = 0.3)

@@ -54,11 +54,15 @@ plotConfig <- list(
          iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
          iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600)
   ),
-  eventVerticalLines = as.POSIXct(c(
-    "2018/01/07 21:07:00", "2018/01/07 21:10:20"), format="%Y/%m/%d %H:%M:%OS"),
-  eventRange = as.POSIXct(c(
-    "2018/01/07 21:07:05", "2018/01/07 21:09:00",
-    "2018/01/07 21:12:00", "2018/01/07 21:12:30"), format="%Y/%m/%d %H:%M:%OS")
+  eventVerticalLines = as.POSIXct(format="%Y/%m/%d %H:%M:%OS", as.character(c(
+    # ))),
+                                  "2018/01/07 21:07:00",
+                                  "2018/01/07 21:10:20"))),
+  eventRange = as.POSIXct(format="%Y/%m/%d %H:%M:%OS", as.character(c(
+    
+    # )))
+                            "2018/01/07 21:07:05", "2018/01/07 21:09:00",
+                            "2018/01/07 21:12:00", "2018/01/07 21:12:30")))
   )
 
 # 時間で絞り込む。
@@ -69,25 +73,7 @@ viewEnd   <- as.POSIXct("2018/01/07 21:10:00 JST")
 # resampleInterval <- "minute"
 resampleInterval <- FALSE
 
-# チャートの設定を変える。CPUは1コアあたりの使用率(4コアだと400%になる)。メモリの単位は[GB]
-processes <- list(
-  explorer = list( 
-       cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 100,
-       memory.scale.auto = TRUE, memory.min = 0, memory.max = 0.25,
-       iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
-       iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600), 
-  OneDrive = list( 
-       cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 10,
-       memory.scale.auto = TRUE, memory.min = 0, memory.max = 1,
-       iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
-       iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600)
-)
 time.lap <- c(time.lap, list(Configure= proc.time()))
-
-eventRangeStart <- plotConfig$eventRange[c(TRUE, FALSE)]
-eventRangeEnd <- plotConfig$eventRange[c(FALSE, TRUE)]
-
-
 ```
 
 ```{r cutAndResampling}
