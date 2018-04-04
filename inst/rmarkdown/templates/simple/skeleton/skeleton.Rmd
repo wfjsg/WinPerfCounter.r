@@ -31,7 +31,7 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE, fig.width=12, fig.height=8, c
 ```
 
 ```{r readFromFile}
-dataRaw <- WinPerfCounter.readcsv(params$csvfile)
+  dataRaw <- WinPerfCounter.readcsv(params$csvfile)
 time.lap <- c(time.lap, list(read = proc.time()))
 ```
 
@@ -81,7 +81,7 @@ time.lap <- c(time.lap, list(Configure= proc.time()))
 # 関心のある時間帯に絞る
 rawStart <- min(dataRaw$Timestamp)
 rawEnd <- max(dataRaw$Timestamp) 
-  duration <- rawEnd - rawStart
+duration <- rawEnd - rawStart
 if( viewLimit ){
   data <- dataRaw %>% dplyr::filter(Timestamp >= viewStart & Timestamp <= viewEnd)
   viewDuration = viewEnd - viewStart
@@ -126,7 +126,8 @@ if( viewLimit ){
 cpu <- WinPerfCounter.Metric.CPU(data, resampleInterval)
 cpu_chart <- ggplot(cpu, aes(x=Timestamp, y=value)) + ggtitle("System CPU")
 cpu_chart <- WinPerfCounter.DecorateForEvent(cpu_chart, plotConfig)
-cpu_chart <- cpu_chart + geom_point(aes(colour = metric), alpha = 0.7) + ylim(0.0, 100.0)
+cpu_chart <- cpu_chart + geom_point(aes(colour = metric), alpha = 0.7)
+cpu_chart <- cpu_chart + xlim(viewStart, viewEnd) + ylim(0.0, 100.0)
 cpu_chart <- cpu_chart + theme_gray()
 
 memory <- WinPerfCounter.Metric.Memory(data, resampleInterval)
@@ -137,7 +138,7 @@ memory_chart <- memory_chart + geom_hline(
 memory_chart <- memory_chart + annotate("text", label=paste(plotConfig$memory, "GB Installed"), 
                                         x=viewStart, y=plotConfig$memory, hjust = 0.0, vjust = -0.5)
 memory_chart <- memory_chart + geom_point(aes(colour = metric), alpha = 0.7)
-memory_chart <- memory_chart + ylim(0, plotConfig$memory.chartlimit)
+memory_chart <- memory_chart + xlim(viewStart, viewEnd) + ylim(0, plotConfig$memory.chartlimit)
 memory_chart <- memory_chart + theme_gray()
 ```
 
