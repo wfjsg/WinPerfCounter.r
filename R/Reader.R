@@ -97,12 +97,15 @@ VMMap.read.header <- function(filename){
   colName <- c("Type",
               "Size","Committed","Private","Total_WS","Private_WS","Shareable_WS",
               "Shared_WS","Locked_WS","Blocks","Largest")
+  read_col_type = paste(rep('c', length(colName)), collapse = '', sep = "")
   stringColumns <- c(1)
   numberCol = colName[stringColumns * -1]
   stringCol = colName[stringColumns]
-  data <- read_table(filename, skip = 4, n_max = 11, col_names = colName) %>%
-    dplyr::mutate_at(numberCol, funs(dplyr::if_else( is.na(.), 0, as.double(.))))
-
+  data <- read_csv(filename, skip =8, n_max = 11, col_names = colName, col_types=read_col_type) %>%
+    dplyr::mutate_at(numberCol, ~ gsub(",", "", .)) %>%
+    dplyr::mutate_at(numberCol, ~ dplyr::if_else(is.na(.), "0", .)) %>%
+    dplyr::mutate_at(numberCol, ~ as.integer(.)) %>%
+    dplyr::mutate(Type = str_replace_all(Type, " ", "_"))
   return(data)
 }
 
@@ -113,7 +116,7 @@ VMMap.read.body <- function(filename){
                "Locked_WS","Blocks","Protection", "Details")
   read_col_type = paste(rep('c', length(colName)), collapse = '', sep = "")
   stringColumns = c(2, 12, 13)
-  numberCol = colName[c(1, stringColumns) * -1]
+  numberCol = colName[c(1, stringColumns) * -1] # Addressカラムは別扱いにする
   stringCol = colName[stringColumns]
   data <- read_csv(filename, skip = 33, trim_ws = FALSE,  col_names = colName, col_types=read_col_type) %>%
     dplyr::mutate_at(numberCol, ~ gsub(",", "", .)) %>%

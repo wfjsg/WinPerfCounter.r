@@ -17,10 +17,13 @@ test_that("rounding_date", {
     c("2017-12-30 20:45:00 JST", "2017-12-30 21:00:00 JST")))
 })
 
-test_that("read.vmmap.header", {
-  header <- VMMap.read.header("testthat/vmmap_head.txt")
+test_that("read.vmmap", {
+  filename <- "tests/testthat/rstudio.csv"
+  header <- VMMap.read.header(filename)
+  expect_equal( header[header$Type == "Total", "Size"], tibble(Size = as.integer(c(866884))) )
+  expect_equal( header[header$Type == "Page_Table", "Private_WS"], tibble(Private_WS = as.integer(c(2564))))
+  body <- VMMap.read.body(filename)
+  expect_equal( body[body$Address=="00020000" & body$ParentOrChild != "Parent", "Committed"], tibble(Committed = as.integer(c(64))))
+  expect_equal( body[body$Address=="227E0000" & body$ParentOrChild == "Child", "Size"], tibble(Size = as.integer(c(9796))))
 })
 
-test_that("read.vmmap.body", {
-  body <- VMMap.read.body("testthat/vmmap_body.txt")
-})
