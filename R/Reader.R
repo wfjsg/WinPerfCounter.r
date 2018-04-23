@@ -91,3 +91,40 @@ WinPerfCounter.Process.Metric.Memory <- function(data, process){
   ret <- ret %>% dplyr::mutate(valueInGB = value/(1024*1024*1024))
 }
 
+#' @export
+VMMap.read.header <- function(filename){
+  colName <- c("Type",
+               "Size","Committed","Private","Total_WS","Private_WS","Shareable_WS","Shared_WS","Locked_WS","Blocks","Largest")
+  stringColumns <- c(1)
+  numberCol = colName[stringColumns * -1]
+  stringCol = colName[stringColumns]
+  colOffset <- c(1, 14, 26, 37, 47, 57, 69, 83, 94, 105, 113, 130)
+  width <-foreach(i=2:length(colOffset), .combine='c') %do% (colOffset[i] - colOffset[i-1])
+  data <- read.fwf(filename, skip = 4, nrow = 11,
+                   width = width, col.names = colName) %>%
+    dplyr::mutate_at(numberCol, ~ as.integer(gsub(",", "", .))) %>%
+    dplyr::mutate_at(numberCol, funs(ifelse(is.na(.), 0, .)))
+
+  return(data)
+}
+
+#' @export
+VMMap.read.body <- function(filename){
+  colName <- c("Address", "Type",
+               "Size","Committed","Private","Total_WS","Private_WS","Shareable_WS","Shared_WS",
+               "Locked_WS","Blocks","Protection", "Details")
+
+  stringColumns = c(1, 2, 12, 13)
+  numberCol = colName[stringColumns * -1]
+  stringCol = colName[stringColumns]
+  colOffset <- c(1, 12, 34, 45, 56, 67, 78, 90, 104, 115, 126, 134, 158, 180)
+  width <-foreach(i=2:length(colOffset), .combine='c') %do% (colOffset[i] - colOffset[i-1])
+  data <- read.fwf(filename, skip = 1,
+                   width = width, col.names = colName) %>%
+    dplyr::mutate_at(numberCol, ~ as.integer(gsub(",", "", .))) %>%
+    dplyr::mutate_at(numberCol, funs(ifelse(is.na(.), 0, .))) %>%
+    dplyr::mutate(isChild = ifelse(str_detect(Address, "^ "), TRUE, FALSE))
+
+  return(data)
+}
+

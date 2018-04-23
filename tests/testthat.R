@@ -16,3 +16,11 @@ test_that("rounding_date", {
   expect_equal(b, as.POSIXct(
     c("2017-12-30 20:45:00 JST", "2017-12-30 21:00:00 JST")))
 })
+
+test_that("read.vmmap.header", {
+  header <- VMMap.read.header("testthat/vmmap_head.txt")
+})
+
+test_that("read.vmmap.body", {
+  body <- VMMap.read.body("testthat/vmmap_body.txt")
+})
