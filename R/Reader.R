@@ -111,13 +111,19 @@ VMMap.read.body <- function(filename){
   colName <- c("Address", "Type",
                "Size","Committed","Private","Total_WS","Private_WS","Shareable_WS","Shared_WS",
                "Locked_WS","Blocks","Protection", "Details")
-  stringColumns = c(1, 2, 12, 13)
-  numberCol = colName[stringColumns * -1]
+  read_col_type = paste(rep('c', length(colName)), collapse = '', sep = "")
+  stringColumns = c(2, 12, 13)
+  numberCol = colName[c(1, stringColumns) * -1]
   stringCol = colName[stringColumns]
-  data <- read_table(filename, skip = 1, col_names = colName, col_types='cciiiiiiiiicc') %>%
-    dplyr::mutate_at(numberCol, funs(dplyr::if_else(is.na(.), 0, as.double(.)))) %>%
-    dplyr::mutate_at(stringCol, funs(dplyr::if_else(is.na(.),"", .))) %>%
-    dplyr::mutate(isChild = dplyr::if_else(str_detect(Address, "^ "), TRUE, FALSE))
+  data <- read_csv(filename, skip = 33, trim_ws = FALSE,  col_names = colName, col_types=read_col_type) %>%
+    dplyr::mutate_at(numberCol, ~ gsub(",", "", .)) %>%
+    dplyr::mutate_at(numberCol, ~ dplyr::if_else(is.na(.), "0", .)) %>%
+    dplyr::mutate_at(numberCol, ~ as.integer(.)) %>%
+    dplyr::mutate_at(stringCol, ~ dplyr::if_else(is.na(.), "", .)) %>%
+    dplyr::mutate(ParentOrChild = if_else(str_detect(Address, "^  "), "Child", "Parent")) %>%
+    dplyr::mutate(Address = str_replace(Address, "^  ", "")) %>%
+    dplyr::mutate(AddressInt = strtoi(Address, base=16)) %>%
+    dplyr::mutate(Type = str_replace_all(Type, " ", "_"))
   return(data)
 }
 
