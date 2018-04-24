@@ -64,6 +64,7 @@ WinPerfCounter.Process.PlotCPU <- function(cpu, plotConfig, processName){
   chart <- ggplot(cpu, aes(x = Timestamp, y=value))
   chart <- chart + ggtitle(paste("Process(", processName, ") CPU", sep = ""))
   chart <- chart + geom_point(aes(colour = metric), alpha = 0.7)
+  chart <- chart + xlim(c(plotConfig$viewStart, plotConfig$viewEnd))
   chart <- chart + theme_gray()
   if( chart.conf$cpu.scale.auto ){
     ymax <-100 * plotConfig$cpucore
@@ -84,6 +85,7 @@ WinPerfCounter.Process.PlotMemory <- function(memory, plotConfig, processName){
   chart <- chart + annotate("text", label=paste(plotConfig$memory, "GB Installed"),
                                           x=viewStart, y=plotConfig$memory, hjust = 0.0, vjust = -0.5)
   chart <- chart + geom_point(aes(colour = metric), alpha = 0.7)
+  chart <- chart + xlim(c(plotConfig$viewStart, plotConfig$viewEnd))
   if( chart.conf$memory.scale.auto == FALSE ){
     chart <- chart + ylim(chart.conf$memory.min, chart.conf$memory.max)
   }
@@ -98,6 +100,7 @@ WinPerfCounter.Process.PlotIOPS <- function(iops, plotConfig, processName){
   chart <- ggplot(iops, aes(x = Timestamp, y=value))
   chart <- chart + ggtitle(paste("Process(", processName, ") IOPS", sep = ""))
   chart <- chart + geom_point(aes(colour = metric), alpha = 0.7)
+  chart <- chart + xlim(c(plotConfig$viewStart, plotConfig$viewEnd))
   if( chart.conf$iops.scale.auto == FALSE ){
     chart <- chart + ylim(chart.conf$iops.min, chart.conf$iops.max)
   }
@@ -112,6 +115,7 @@ WinPerfCounter.Process.PlotIOBytes <- function(iobytes, plotConfig, processName)
   chart <- ggplot(iobytes, aes(x = Timestamp, y=valueInMB))
   chart <- chart + ggtitle(paste("Process(", processName, ") IO Mega Byte/s", sep = ""))
   chart <- chart + geom_point(aes(colour = metric), alpha = 0.7)
+  chart <- chart + xlim(c(plotConfig$viewStart, plotConfig$viewEnd))
   if( chart.conf$iobytes.scale.auto == FALSE ){
     chart <- chart + ylim(chart.conf$iobytes.min, chart.conf$iobytes.max)
   }
