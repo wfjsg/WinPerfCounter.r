@@ -198,7 +198,7 @@ VMMap.read.body <- function(filename){
   stringColumns = c(2, 12, 13)
   numberCol = colName[c(1, stringColumns) * -1] # Addressカラムは別扱いにする
   stringCol = colName[stringColumns]
-  data <- read_csv(filename, skip = 33, trim_ws = FALSE,  col_names = colName, col_types=read_col_type) %>%
+  data <- read_csv(filename, skip = 15, trim_ws = FALSE,  col_names = colName, col_types=read_col_type) %>%
     dplyr::mutate_at(numberCol, ~ gsub(",", "", .)) %>%
     dplyr::mutate_at(numberCol, ~ dplyr::if_else(is.na(.), "0", .)) %>%
     dplyr::mutate_at(numberCol, ~ as.integer(.)) %>%
