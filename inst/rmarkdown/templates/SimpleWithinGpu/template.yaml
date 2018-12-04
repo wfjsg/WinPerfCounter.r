@@ -1,0 +1,4 @@
+name: SimplePerfTemplateWithinGPU
+description: Simple System Summary Within GPU
+create_dir: true
+

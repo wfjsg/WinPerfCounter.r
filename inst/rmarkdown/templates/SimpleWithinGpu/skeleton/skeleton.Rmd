@@ -1,0 +1,368 @@
+---
+title: "SimpleSystemSummary"
+author: "WataruFujishige"
+date: "2017/12/31"
+output: html_document
+params:
+  csvfile: "../../../../../tests/testthat/with_gpu.csv"
+---
+
+```{r setup, include=FALSE}
+library(WinPerfCounter)
+library(ggplot2)
+library(ggthemes)
+library(cowplot)
+library(formattable)
+library(tibble)
+library(knitr)
+time.lap = list()
+time.lap <- c(time.lap, list(first = proc.time()))
+
+chunk.lap <<- list()
+knitr::knit_hooks$set(chunk_lap = function(before, options, envir){
+  if( before ){
+    chunk.lap[[options$label]] <<- proc.time()
+  }else{
+    chunk.lap[[options$label]] <<- proc.time() - chunk.lap[[options$label]]
+    my <- chunk.lap[[options$label]]
+  }
+})
+knitr::opts_chunk$set(echo = FALSE, warning=FALSE, fig.width=12, fig.height=8, chunk_lap = TRUE)
+```
+
+```{r readFromFile}
+dataRaw <- WinPerfCounter.readcsv(params$csvfile)
+time.lap <- c(time.lap, list(read = proc.time()))
+```
+
+```{r Configure}
+# --------------------------
+# CPUの論理コア数と搭載メモリ量、システム全体に書くメモリ量
+plotConfig <- list(
+  cpucore = 8,
+  memory = 8,
+  memory.chartlimit = 32,
+  process = list(
+    explorer = list( 
+         cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 100,
+         memory.scale.auto = TRUE, memory.min = 0, memory.max = 0.25,
+         iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
+         iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600), 
+    OneDrive = list( 
+         cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 10,
+         memory.scale.auto = TRUE, memory.min = 0, memory.max = 1,
+         iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
+         iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600)
+  ),
+  eventVerticalLines = as.POSIXct(format="%Y/%m/%d %H:%M:%OS", as.character(c(
+    # ))),
+                                  "2018/01/07 21:07:00",
+                                  "2018/01/07 21:10:20"))),
+  eventRange = as.POSIXct(format="%Y/%m/%d %H:%M:%OS", as.character(c(
+    
+    # )))
+                            "2018/01/07 21:07:05", "2018/01/07 21:09:00",
+                            "2018/01/07 21:12:00", "2018/01/07 21:12:30")))
+  )
+
+# 時間で絞り込む。
+viewLimit <- FALSE
+viewStart <- as.POSIXct("2018/01/07 21:08:00 JST")
+viewEnd   <- as.POSIXct("2018/01/07 21:10:00 JST")
+# リサンプリングする間隔。FALSEだとリサンプリングしない
+# resampleInterval <- "minute"
+resampleInterval <- FALSE
+
+time.lap <- c(time.lap, list(Configure= proc.time()))
+```
+
+```{r cutAndResampling}
+# --------------------------
+# 関心のある時間帯に絞る
+rawStart <- min(dataRaw$Timestamp)
+rawEnd <- max(dataRaw$Timestamp) 
+duration <- rawEnd - rawStart
+if( viewLimit ){
+  data <- dataRaw %>% dplyr::filter(Timestamp >= viewStart & Timestamp <= viewEnd)
+  viewDuration = viewEnd - viewStart
+  time.lap <- c(time.lap, list(TimestampLimit = proc.time()))
+}else{
+  data <- dataRaw
+  viewStart <- rawStart
+  viewEnd <- rawEnd
+}
+plotConfig$viewStart <- viewStart
+plotConfig$viewEnd <- viewEnd
+```
+
+# Summary
+
+```{r showHeader, asis=TRUE}
+{
+  print(paste("StartDate : ", rawStart))
+  print(paste("EndDate   : ", rawEnd))
+  print(paste("DataPoints: ", nrow(dataRaw)))
+  print(paste("Duration  : ", duration, units(duration)))
+
+  if( viewLimit ){
+    print(paste("viewLimit:", viewLimit))
+    print(paste("ViewStart:", viewStart))
+    print(paste("ViewEnd  :", viewEnd))
+    print(paste("ViewDuration: ", viewDuration, units(viewDuration)))
+  }else{
+    print(paste("Start and End No-Limit"))
+  }
+  if( resampleInterval == FALSE){
+    print(paste("Resampling: Disabled"))
+  }else{
+    print(paste("Resampling: ", resampleInterval))
+  }
+}
+```
+
+---
+
+# Total
+
+```{r tidyTotal}
+cpu <- WinPerfCounter.Metric.CPU(data, resampleInterval)
+cpu_chart <- ggplot(cpu, aes(x=Timestamp, y=value)) + ggtitle("System CPU")
+cpu_chart <- WinPerfCounter.DecorateForEvent(cpu_chart, plotConfig)
+cpu_chart <- cpu_chart + geom_point(aes(colour = metric), alpha = 0.7)
+cpu_chart <- cpu_chart + xlim(c(plotConfig$viewStart, plotConfig$viewEnd))
+cpu_chart <- cpu_chart + ylim(0.0, 100.0)
+cpu_chart <- cpu_chart + theme_gray()
+
+memory <- WinPerfCounter.Metric.Memory(data, resampleInterval)
+memory_chart <- ggplot(memory, aes(x = Timestamp, y=valueInGB)) + ggtitle("System Memory")
+memory_chart <- WinPerfCounter.DecorateForEvent(memory_chart, plotConfig)
+memory_chart <- memory_chart + geom_hline(
+  yintercept = plotConfig$memory, linetype="dashed", colour="blue")
+memory_chart <- memory_chart + annotate("text", label=paste(plotConfig$memory, "GB Installed"), 
+                                        x=viewStart, y=plotConfig$memory, hjust = 0.0, vjust = -0.5)
+memory_chart <- memory_chart + geom_point(aes(colour = metric), alpha = 0.7)
+memory_chart <- memory_chart + xlim(plotConfig$viewStart, plotConfig$viewEnd)
+memory_chart <- memory_chart + ylim(0, plotConfig$memory.chartlimit)
+memory_chart <- memory_chart + theme_gray()
+```
+
+## Summary(CPU)
+
+```{r showTotalCPU}
+statistics <- WinPerfCounter.summary(cpu)
+WinPerfCounter.formattable(statistics)
+```
+
+## Summary(Memory)[GB]
+```{r showTotalMemory}
+statistics <- WinPerfCounter.summaryInGB(memory)
+WinPerfCounter.formattable(statistics)
+```
+
+## Chart
+
+```{r showTotalChart}
+plot_grid(cpu_chart, memory_chart, ncol=1, align="v")
+time.lap <- c(time.lap, list(procTotal = proc.time()))
+```
+ 
+***
+
+# Process(Explorer)
+
+```{r tidyProcess1}
+processName <- "explorer"
+p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
+cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, plotConfig, processName)
+
+p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName, resampleInterval)
+memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, plotConfig, processName)
+
+p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName, resampleInterval)
+iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, plotConfig, processName)
+
+p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName, resampleInterval)
+iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, plotConfig, processName)
+```
+
+## Summary(CPU)
+
+```{r showProcess1CPU}
+statistics <- WinPerfCounter.summary(p.cpu)
+WinPerfCounter.formattable(statistics)
+```
+
+## Summary(Memory)[GB]
+
+```{r showProcess1Memory}
+statistics <- WinPerfCounter.summaryInGB(p.memory)
+WinPerfCounter.formattable(statistics)
+```
+
+## Summary(IOPS)
+
+```{r showProcess1IOPS}
+statistics <- WinPerfCounter.summary(p.iops)
+WinPerfCounter.formattable(statistics)
+```
+
+## Summary(IO MegaByte/s)
+
+```{r showProcess1IOBytes}
+statistics <- WinPerfCounter.summaryInMB(p.iobytes)
+WinPerfCounter.formattable(statistics)
+```
+
+## Chart
+
+```{r showProcess1Chart}
+plot_grid(cpu_chart, memory_chart, iops_chart, iobytes_chart, ncol=1, align="v")
+time.lap <- c(time.lap, list(process1 = proc.time()))
+```
+
+***
+
+# Process(OneDrive)
+
+```{r tidyProcess2}
+processName <- "OneDrive"
+p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
+cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, plotConfig, processName)
+
+p.memory <- WinPerfCounter.Process.Metric.Memory(data, processName, resampleInterval)
+memory_chart <- WinPerfCounter.Process.PlotMemory(p.memory, plotConfig, processName)
+
+p.iops <- WinPerfCounter.Process.Metric.IOPS(data, processName, resampleInterval)
+iops_chart <- WinPerfCounter.Process.PlotIOPS(p.iops, plotConfig, processName)
+
+p.iobytes <- WinPerfCounter.Process.Metric.IOBytes(data, processName, resampleInterval)
+iobytes_chart <- WinPerfCounter.Process.PlotIOBytes(p.iobytes, plotConfig, processName)
+```
+
+## Summary(CPU)
+
+```{r showProcess2CPU}
+statistics <- WinPerfCounter.summary(p.cpu)
+WinPerfCounter.formattable(statistics)
+```
+
+## Summary(Memory)[GB]
+```{r showProcess2Memory}
+statistics <- WinPerfCounter.summaryInGB(p.memory)
+WinPerfCounter.formattable(statistics)
+```
+
+## Summary(IOPS)
+
+```{r showProcess2IOPS}
+statistics <- WinPerfCounter.summary(p.iops)
+WinPerfCounter.formattable(statistics)
+```
+
+## Summary(IO MegaByte/s)
+
+```{r showProcess2IOBytes}
+statistics <- WinPerfCounter.summaryInMB(p.iobytes)
+WinPerfCounter.formattable(statistics)
+```
+
+## Chart
+
+```{r showProcess2Chart}
+plot_grid(cpu_chart, memory_chart, iops_chart, iobytes_chart, ncol=1, align="v")
+time.lap <- c(time.lap, list(process2 = proc.time()))
+```
+
+***
+
+# Means of Metrics
+
+## CPU
+
+### % Processor Time
+
+いわゆるCPU使用率。System全体の場合には最大100%で、プロセスごとの場合にはコア数×100%が最大です。
+
+### % User Time & % Privileged Time
+
+それぞれユーザーモードと特権モードで実行されたプロセッサ時間。Priviledged Time が User Timeの15%を超える場合、ディスクアレイがボトルネックである可能性がある。25%を超えるなら、可能性が高い。
+
+
+## Memory
+
+### Available Bytes
+
+プロセスへ割り当て、もしくはシステムにすぐに利用できる物理メモリのサイズを示します。スタンバイ（キャッシュ済み）、空き、ゼロページの一覧にあるメモリの合計です。
+
+### Committed Bytes
+
+コミットされた仮想メモリのサイズをバイト数で表示します。コミット メモリは、領域がディスク ページング ファイルに予約されている物理メモリです。各物理ドライブにはページング ファイルが 1 つ以上あります。このカウンターは、平均値ではなく最新の監視値のみを表示します。
+
+### Committed Limit
+
+ページファイルを拡張せずにコミットできる仮想メモリの合計値です。
+
+### Virtual Bytes
+
+プロセスが保持する仮想メモリの総量を示します。メモリマップされたファイル(共有DLLも)や、ページアウトされたデータも含みます。
+
+### Private Bytes
+
+プロセスが要求した仮想メモリ量ですが、メモリマップされたファイルを *含みません* 。 物理メモリに張り付いているメモリ量ではなく、ページアウトされたメモリを含みます。
+
+### Working Set
+
+現在のプロセスが参照する *物理メモリ* の総量です。private bytesと違い、メモリマップされたファイル等各種のリソースを含みます。タスクマネージャの *Memory Usage* で表示されるものと同等です。
+ページアウトされたメモリは *含みません* 。ページフォルトなしで参照可能なメモリ量を示します。
+
+### IO Read Operations/sec,  IO Write Operations/sec & ～ Byte/s
+
+* プロセスが行った IOPS を表します。
+* ネットワーク / ディスクなどを区別できません。
+* メモリは含みません。
+* Otherは、読み込みと書き込み以外（制御）などを表します。
+
+※なお元データの「IO Data Operations/sec」は、IO Data Read Operation/s と IO Data Write Operations/sの合算です。
+
+
+***
+
+## Report Self
+
+### Per chunk
+```{r chunk_lap}
+chunk.lap.viz <- data.frame(t( 
+  data.frame(purrr::map(chunk.lap[1:(length(chunk.lap)-1)], 
+                        ~c(.["user.self"], .["sys.self"], .["elapsed"])) )) ) %>% 
+  rownames_to_column(var = "Stage")
+
+chunk.total <- chunk.lap.viz %>% 
+  dplyr::summarise_at(dplyr::vars(-1), dplyr::funs(sum)) %>% 
+  dplyr::mutate(Stage = "Total")
+chunk.lap.viz <- rbind(chunk.lap.viz, chunk.total)
+
+formattable(chunk.lap.viz)
+```
+
+### Per Phase
+
+```{r}
+time.lap.df.tmp <- as.data.frame(
+  t(
+    data.frame(purrr::map(time.lap, ~ c(.["user.self"], .["sys.self"], .["elapsed"])))))
+time.lap.viz <- time.lap.df.tmp %>% rownames_to_column(var = "Stage") %>% dplyr::mutate(
+  user.self = user.self - lag(user.self, default = 0),
+  sys.self  = sys.self - lag(sys.self, default = 0),
+  elapsed   = elapsed - lag(elapsed, default = 0)) %>% dplyr::filter(Stage != "first")
+
+lap.total <- time.lap.viz %>% 
+  dplyr::summarise_at(dplyr::vars(-1), dplyr::funs(sum)) %>% 
+  dplyr::mutate(Stage = "Total")
+time.lap.viz <- rbind(time.lap.viz, lap.total)
+
+formattable(time.lap.viz, list(
+  user.self = color_bar("azure1"),
+  sys.self = color_bar("azure2"),
+  elapsed = color_bar("azure4")
+))
+```
