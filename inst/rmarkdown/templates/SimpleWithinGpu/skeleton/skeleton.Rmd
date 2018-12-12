@@ -43,12 +43,12 @@ plotConfig <- list(
   memory = 8,
   memory.chartlimit = 32,
   process = list(
-    explorer = list( 
+    'python' = list( 
          cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 100,
          memory.scale.auto = TRUE, memory.min = 0, memory.max = 0.25,
          iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
          iobytes.scale.auto = TRUE, iobytes.min = 0, iobytes.max = 600), 
-    OneDrive = list( 
+    'Python#1' = list( 
          cpu.scale.auto = TRUE, cpu.min = 0, cpu.max = 10,
          memory.scale.auto = TRUE, memory.min = 0, memory.max = 1,
          iops.scale.auto = TRUE, iops.min = 0, iops.max = 600,
@@ -122,6 +122,19 @@ plotConfig$viewEnd <- viewEnd
 
 ---
 
+# Columns
+
+```{r}
+columns <- purrr::map(colnames(data), ~ str_split_fixed(., '\\|', 2)) 
+mz <- purrr::map_dfr(columns, ~ data_frame(v = .[1], e = .[2]))
+
+  purrr::flatten_chr()
+  unique()
+```
+
+
+---
+
 # Total
 
 ```{r tidyTotal}
@@ -168,10 +181,10 @@ time.lap <- c(time.lap, list(procTotal = proc.time()))
  
 ***
 
-# Process(Explorer)
+# Process(Python)
 
 ```{r tidyProcess1}
-processName <- "explorer"
+processName <- "python"
 p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
 cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, plotConfig, processName)
 
@@ -222,10 +235,10 @@ time.lap <- c(time.lap, list(process1 = proc.time()))
 
 ***
 
-# Process(OneDrive)
+# Process(Python#1)
 
 ```{r tidyProcess2}
-processName <- "OneDrive"
+processName <- "python"
 p.cpu <- WinPerfCounter.Process.Metric.CPU(data, processName, resampleInterval)
 cpu_chart <- WinPerfCounter.Process.PlotCPU(p.cpu, plotConfig, processName)
 
