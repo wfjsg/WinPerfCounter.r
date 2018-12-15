@@ -63,12 +63,10 @@ ui <- fluidPage(
 
 internalRenderPlot <- function(x, y){
   if( length(y) == 0){
-    print("y is empty")
     return(ggplot())
   }
 
   full_column_names <- paste(x, y, sep = '|') %>% c('Timestamp')
-  print(full_column_names)
   my_df <- data %>%
     dplyr::select(dplyr::one_of(full_column_names)) %>%
     tidyr::gather(key = metric, value = value, -Timestamp, factor_key = TRUE)

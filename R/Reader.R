@@ -111,6 +111,19 @@ WinPerfCounter.Metric.CPU <- function(data, resample = FALSE){
   }
 }
 
+#' @export
+WinPerfCounter.Metric.GPU_Memory <- function(data, resample = FALSE, addr){
+  keys <- c("Shared Usage", "Dedicated Usage", "Total Committed")
+  category_name <- paste("GPU Adapter Memory", "(luid_0x00000000_", addr, "_phys_0)", sep = "")
+  ret <- makeTidyMetric(data, category_name, keys) %>%
+    dplyr::mutate(valueInMB = value/(1024*1024))
+  if( resample != FALSE ){
+    return( smartResample(ret, resample) )
+  }else{
+    return(ret)
+  }
+}
+
 
 #' @export
 WinPerfCounter.Metric.Memory <- function(data, resample = FALSE){
