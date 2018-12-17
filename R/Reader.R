@@ -223,3 +223,17 @@ VMMap.read.body <- function(filename){
   return(data)
 }
 
+#' @export
+listup_gpu_engine <- function(data){
+  candidates <- colnames(data)
+  e2 <- candidates %>%
+    purrr::map(~ str_split_fixed(., '\\|', 2)) %>%
+    purrr::map_dfr(~ data_frame(v = .[1], e = .[2])) %>%
+    dplyr::filter(str_detect(v, pattern = "GPU Process Memory")) %>%
+    dplyr::select(v) %>%
+    dplyr::distinct(v) %>%
+    dplyr::mutate(f = str_match(v, "luid_0x[0-9A-Fa-f]+_(0x[0-9A-Fa-f]+)")[,2]) %>%
+    dplyr::distinct(f) %>%
+    dplyr::pull(f)
+  return(e2)
+}

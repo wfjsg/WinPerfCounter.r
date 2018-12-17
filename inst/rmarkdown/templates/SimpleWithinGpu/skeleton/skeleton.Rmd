@@ -1,5 +1,5 @@
 ---
-title: "SimpleSystemSummary"
+title: "SimpleSystemSummary within GPU"
 author: "WataruFujishige"
 date: "2017/12/31"
 output: html_document
@@ -32,6 +32,7 @@ knitr::opts_chunk$set(echo = FALSE, warning=FALSE, fig.width=12, fig.height=8, c
 
 ```{r readFromFile}
 dataRaw <- WinPerfCounter.readcsv(params$csvfile)
+gpu.list <- WinPerfCounter::listup_gpu_engine(dataRaw)
 time.lap <- c(time.lap, list(read = proc.time()))
 ```
 
@@ -169,7 +170,7 @@ time.lap <- c(time.lap, list(procTotal = proc.time()))
 ***
 
 ```{r todyGPU}
-gpu <- WinPerfCounter.Metric.GPU_Memory(data, resampleInterval, "0x0000A4EF")
+gpu <- WinPerfCounter.Metric.GPU_Memory(data, resampleInterval, gpu.list[1])
 gpu_chart <- ggplot(gpu, aes(x=Timestamp, y=valueInMB)) + ggtitle("GPU Memory[MB]")
 gpu_chart <- WinPerfCounter.DecorateForEvent(gpu_chart, plotConfig)
 gpu_chart <- gpu_chart + geom_point(aes(colour = metric), alpha = 0.7)

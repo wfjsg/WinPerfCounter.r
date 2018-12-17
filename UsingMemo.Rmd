@@ -1,0 +1,14 @@
+WinPerfCounter
+
+# Memeo
+
+## GPU memo
+
+### How to identity gpu address
+
+```{r}
+library(WinPerfCounter)
+filename <- "tests/testthat/with_gpu.csv"
+data <- WinPerfCounter::WinPerfCounter.readcsv(filename)
+WinPerfCounter::listup_gpu_engine(data)
+```
