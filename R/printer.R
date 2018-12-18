@@ -59,6 +59,17 @@ WinPerfCounter.formattable <- function(df) {
 }
 
 #' @export
+WinPerfCounter.System.DrawGpuMemory <- function(gpu, plotConfig, addr){
+  g <- ggplot(gpu, aes(x=Timestamp, y=valueInMB))
+  g <- g + ggtitle("GPU Memory[MB]")
+  g <- WinPerfCounter.DecorateForEvent(g, plotConfig)
+  g <- g + geom_point(aes(colour = metric), alpha = 0.7)
+  g <- g + xlim(c(plotConfig$viewStart, plotConfig$viewEnd))
+  g <- g + theme_gray()
+
+}
+
+#' @export
 WinPerfCounter.Process.PlotCPU <- function(cpu, plotConfig, processName){
   chart.conf <- plotConfig$process[[processName]]
   chart <- ggplot(cpu, aes(x = Timestamp, y=value))
