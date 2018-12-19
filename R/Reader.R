@@ -112,6 +112,47 @@ WinPerfCounter.Metric.CPU <- function(data, resample = FALSE){
 }
 
 #' @export
+WinPerfCounter.Metric.GPU.UtilizationPercentage <- function(data, resample = FALSE, addr){
+  submetric <- "Utilization Percentage"
+
+  # TODO code clear
+  df <- data_frame(original_col_name = colnames(data)) %>%
+    dplyr::filter(str_detect(original_col_name, "GPU Engine")) %>%
+    tidyr::separate(original_col_name, into = c('raw_category', 'metric'),
+                    sep = '\\|', remove = FALSE) %>%
+    dplyr::mutate(category = str_replace(raw_category, "^GPU Engine\\(", "")) %>%
+    dplyr::mutate(category = str_replace(category, "\\)$", "")) %>%
+    tidyr::separate(category, into = c('str_pid', 'pid', 'str_luid', 'uid',
+                                       'gpu_addr', 'str_phys', 'phys_number',
+                                       'str_engtype', 'engtype'),
+                    sep ='_', extra='merge', remove = FALSE)
+
+  category_name <- df %>%
+    dplyr::filter(gpu_addr == addr) %>%
+    dplyr::pull(original_col_name) %>%
+    c('Timestamp', levels(.))
+
+  df2 <- df %>%
+    dplyr::select(original_col_name, gpu_addr, engtype, metric) %>%
+    dplyr::mutate(original_col_name = as_factor(original_col_name))
+
+  ret <- data %>%
+    dplyr::select(dplyr::one_of(category_name)) %>%
+    tidyr::gather(key = original_col_name, value = value, -Timestamp, factor_key = TRUE)
+
+  ret <- ret %>%
+    dplyr::mutate(original_col_name = as_factor(original_col_name)) %>%
+    dplyr::left_join(df2, by=c('original_col_name' = 'original_col_name'))
+    dplyr::filter(metric == submetric)
+
+  # TODO: call Resampling!!
+
+  return(ret)
+  # df3 <- data %>%
+  #   dplyr::select(one_of(df2))
+}
+
+#' @export
 WinPerfCounter.Metric.GPU_Memory <- function(data, resample = FALSE, addr){
   keys <- c("Shared Usage", "Dedicated Usage", "Total Committed")
   category_name <- paste("GPU Adapter Memory", "(luid_0x00000000_", addr, "_phys_0)", sep = "")
