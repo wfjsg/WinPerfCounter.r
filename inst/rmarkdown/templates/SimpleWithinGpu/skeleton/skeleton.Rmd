@@ -171,33 +171,58 @@ time.lap <- c(time.lap, list(procTotal = proc.time()))
 
 # GPU
 
-```{r todyGPU}
-gpu <- list()
-gpu[[1]] <- WinPerfCounter.Metric.GPU_Memory(data, resampleInterval, gpu.list[1])
-gpu[[2]] <- WinPerfCounter.Metric.GPU_Memory(data, resampleInterval, gpu.list[2])
+```{r tidyGPU}
+gpu_compute <- list()
+gpu_compute[[1]] <- WinPerfCounter.Metric.GPU.UtilizationPercentage(data, resampleInterval, gpu.list[[1]])
+gpu_compute[[2]] <- WinPerfCounter.Metric.GPU.UtilizationPercentage(data, resampleInterval, gpu.list[[2]])
+
+gpu_memory <- list()
+gpu_memory[[1]] <- WinPerfCounter.Metric.GPU_Memory(data, resampleInterval, gpu.list[1])
+gpu_memory[[2]] <- WinPerfCounter.Metric.GPU_Memory(data, resampleInterval, gpu.list[2])
 ```
 
-## GPU1 Memory[MB]
 
-```{r showGpu1Memory}
-statistics <- WinPerfCounter.summaryInMB(gpu[[1]])
+## GPU1 Computing & Memory Usage[MB]
+
+```{r showGpu1Processing}
+statistics <- WinPerfCounter.summary(gpu_compute[[1]])
 WinPerfCounter.formattable(statistics)
 ```
 
-## GPU2 Memory[MB]
+
+```{r showGpu1Memory}
+statistics <- WinPerfCounter.summaryInMB(gpu_memory[[1]])
+WinPerfCounter.formattable(statistics)
+```
+
+## GPU2 Computing & Memory [MB]
+
+```{r showGpu2Processing}
+statistics <- WinPerfCounter.summary(gpu_compute[[2]])
+WinPerfCounter.formattable(statistics)
+```
 
 ```{r showGpu2Memory}
-statistics <- WinPerfCounter.summaryInMB(gpu[[2]])
+statistics <- WinPerfCounter.summaryInMB(gpu_memory[[2]])
 WinPerfCounter.formattable(statistics)
 ```
 
 
 ## Chart
 
+```{r show_gpu_Chart}
+gpu_computing_p <- list()
+gpu_computing_p[[1]] <- WinPerfCounter.System.DrawGpuCompute(gpu_compute[[1]], plotConfig, gpu.list[1])
+gpu_computing_p[[2]] <- WinPerfCounter.System.DrawGpuCompute(gpu_compute[[2]], plotConfig, gpu.list[2])
+plot_grid(gpu_computing_p[[1]], gpu_computing_p[[2]], ncol=1, align="v")
+```
+
+
 ```{r showpu_MmeoryChart}
-gpu_chart1 <- WinPerfCounter.System.DrawGpuMemory(gpu[[1]], plotConfig, gpu.list[1])
-gpu_chart2 <- WinPerfCounter.System.DrawGpuMemory(gpu[[2]], plotConfig, gpu.list[2])
-plot_grid(gpu_chart1, gpu_chart2, ncol=1, align="v")
+gpu_memory_p <- list()
+gpu_memory_p[[1]] <- WinPerfCounter.System.DrawGpuMemory(gpu_memory[[1]], plotConfig, gpu.list[1])
+gpu_memory_p[[2]] <- WinPerfCounter.System.DrawGpuMemory(gpu_memory[[2]], plotConfig, gpu.list[2])
+plot_grid(gpu_memory_p[[1]], gpu_memory_p[[2]], ncol=1, align="v")
 ```
 
 
