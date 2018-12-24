@@ -133,17 +133,15 @@ WinPerfCounter.Metric.GPU.UtilizationPercentage <- function(data, resample = FAL
     c('Timestamp', levels(.))
 
   df2 <- df %>%
-    dplyr::select(original_col_name, gpu_addr, engtype, metric) %>%
-    dplyr::mutate(original_col_name = as_factor(original_col_name))
+    dplyr::select(original_col_name, gpu_addr, engtype, metric)
+  #   dplyr::mutate(original_col_name = as_factor(original_col_name))
 
   ret <- data %>%
     dplyr::select(dplyr::one_of(category_name)) %>%
-    tidyr::gather(key = original_col_name, value = value, -Timestamp, factor_key = TRUE)
-
-  ret <- ret %>%
-    dplyr::mutate(original_col_name = as_factor(original_col_name)) %>%
-    dplyr::left_join(df2, by=c('original_col_name' = 'original_col_name'))
-    dplyr::filter(metric == submetric)
+    tidyr::gather(key = original_col_name, value = value, -Timestamp, factor_key = FALSE) %>%
+    dplyr::left_join(df2, by=c('original_col_name' = 'original_col_name')) %>%
+    dplyr::filter(metric == submetric) %>%
+    dplyr::mutate(metric = engtype)
 
   # TODO: call Resampling!!
 
