@@ -63,7 +63,7 @@ WinPerfCounter.System.DrawGpuCompute <- function(gpu, plotConfig, addr){
   g <- ggplot(gpu, aes(x=Timestamp, y=value))
   g <- g + ggtitle(paste("GPU ", addr, " Percentage[MB]", sep = ""))
   g <- WinPerfCounter.DecorateForEvent(g, plotConfig)
-  g <- g + geom_point(aes(colour = metric), alpha = 0.7)
+  g <- g + geom_line(aes(colour = metric), alpha = 0.7)
   g <- g + xlim(c(plotConfig$viewStart, plotConfig$viewEnd))
   g <- g + theme_gray()
 }
